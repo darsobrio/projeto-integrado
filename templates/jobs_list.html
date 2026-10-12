@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+{% block title %}Vagas de Emprego - Opurtunet{% endblock %}
+{% block content %}
+<section class="py-4 bg-light border-bottom">
+    <div class="container">
+        <div class="d-flex flex-wrap gap-3 justify-content-between align-items-center">
+            <div>
+                <h2 class="fw-bold text-primary-ifpi mb-0"><i class="bi bi-briefcase me-2"></i>Vagas de Emprego e Estágio</h2>
+                <p class="text-muted mb-0">{{ vagas|length|default:"23" }} vagas encontradas</p>
+            </div>
+            <button class="btn btn-outline-primary d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#filtrosCanvas">
+                <i class="bi bi-filter me-1"></i>Filtros
+            </button>
+        </div>
+    </div>
+</section>
+
+<section class="py-4">
+    <div class="container">
+        <div class="row g-4">
+            <aside class="col-lg-3">
+                <div class="offcanvas-lg offcanvas-start shadow" tabindex="-1" id="filtrosCanvas" aria-labelledby="filtrosCanvasLabel">
+                    <div class="offcanvas-header border-bottom d-lg-none">
+                        <h5 class="offcanvas-title" id="filtrosCanvasLabel"><i class="bi bi-filter-circle me-2"></i>Filtros</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#filtrosCanvas"></button>
+                    </div>
+                    <div class="offcanvas-body p-3 p-lg-0">
+                        <div class="filter-sidebar">
+                            <div class="mb-4">
+                                <label class="form-label fw-bold mb-2 d-block"><i class="bi bi-search me-1"></i>Cargo ou Palavra-chave</label>
+                                <input type="text" class="form-control" placeholder="Ex: Desenvolvedor, RH, ...">
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label fw-bold mb-2 d-block"><i class="bi bi-geo-alt me-1"></i>Cidade / Local</label>
+                                <select class="form-select">
+                                    <option value="">Todas as cidades</option>
+                                    <option>Paulistana - PI</option>
+                                    <option>Teresina - PI</option>
+                                    <option>Oeiras - PI</option>
+                                    <option>Floriano - PI</option>
+                                    <option>Remoto (todo Brasil)</option>
+                                </select>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label fw-bold mb-2 d-block"><i class="bi bi-cash-coin me-1"></i>Faixa Salarial</label>
+                                <select class="form-select">
+                                    <option value="">Qualquer faixa</option>
+                                    <option>Até R$ 1.500</option>
+                                    <option>R$ 1.500 a R$ 2.500</option>
+                                    <option>R$ 2.500 a R$ 4.000</option>
+                                    <option>Acima de R$ 4.000</option>
+                                </select>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label fw-bold mb-2 d-block"><i class="bi bi-clock me-1"></i>Tipo de Contrato</label>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="c1">
+                                    <label class="form-check-label" for="c1">CLT</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="c2">
+                                    <label class="form-check-label" for="c2">Estágio</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="c3">
+                                    <label class="form-check-label" for="c3">Jovem Aprendiz</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="c4">
+                                    <label class="form-check-label" for="c4">Temporário</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="c5">
+                                    <label class="form-check-label" for="c5">Freelancer</label>
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label fw-bold mb-2 d-block"><i class="bi bi-laptop me-1"></i>Modalidade</label>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="m1">
+                                    <label class="form-check-label" for="m1">Presencial</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="m2">
+                                    <label class="form-check-label" for="m2">Híbrido</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="m3">
+                                    <label class="form-check-label" for="m3">Remoto</label>
+                                </div>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-primary-ifpi" type="button"><i class="bi bi-funnel me-1"></i>Aplicar Filtros</button>
+                                <button class="btn btn-outline-secondary" type="button"><i class="bi bi-x-circle me-1"></i>Limpar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <div class="col-lg-9">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <select class="form-select w-auto">
+                        <option>Mais recentes</option>
+                        <option>Maior salário</option>
+                        <option>Mais relevantes</option>
+                    </select>
+                </div>
+                <div class="row g-3">
+                    {% for vaga in vagas %}
+                    <div class="col-12">
+                        <div class="card card-hover border shadow-sm">
+                            <div class="card-body">
+                                <div class="row g-3 align-items-center">
+                                    <div class="col-md-8">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div class="flex-grow-1 me-3">
+                                                <h5 class="mb-1 text-primary-ifpi fw-bold">{{ vaga.funcao }}</h5>
+                                                <p class="text-muted mb-1 small"><i class="bi bi-building me-1"></i>{{ vaga.nome_empresa }}</p>
+                                                <p class="text-muted small mb-0"><i class="bi bi-geo-alt me-1"></i>{{ vaga.endereco|default:"Paulistana - PI" }}</p>
+                                            </div>
+                                            <span class="badge {% if vaga.status == 'aberta' %}bg-success{% else %}bg-secondary{% endif %} flex-shrink-0">{{ vaga.get_status_display }}</span>
+                                        </div>
+                                        <div class="d-flex flex-wrap gap-2 mb-2">
+                                            <span class="badge rounded-pill bg-light text-dark border">
+                                                <i class="bi bi-clock me-1"></i>{{ vaga.get_tipo_contrato_display }}
+                                            </span>
+                                            <span class="badge rounded-pill bg-light text-dark border">
+                                                <i class="bi bi-laptop me-1"></i>{{ vaga.get_modalidade_display }}
+                                            </span>
+                                            <span class="badge rounded-pill bg-info text-dark">
+                                                <i class="bi bi-people me-1"></i>{{ vaga.qtd_vagas }} vaga{{ vaga.qtd_vagas|pluralize }}
+                                            </span>
+                                        </div>
+                                        <p class="text-muted small mb-0 d-none d-md-block">
+                                            {{ vaga.descricao|truncatewords:25 }}
+                                        </p>
+                                    </div>
+                                    <div class="col-md-4 d-md-flex flex-md-column align-items-md-end justify-content-md-center">
+                                        <div class="mb-2 mb-md-3 text-start text-md-end">
+                                            <h5 class="fw-bold mb-0 text-success">
+                                                R$ {% if vaga.salario %}{{ vaga.salario }}{% else %}a combinar{% endif %}
+                                            </h5>
+                                            <small class="text-muted">{% if vaga.salario %}mensal{% endif %}</small>
+                                        </div>
+                                        <a href="{% url 'jobs:detail' vaga.pk %}" class="btn btn-primary-ifpi w-100 w-md-auto px-4">
+                                            <i class="bi bi-eye me-1"></i>Ver Detalhes
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    {% for i in "123456"|make_list %}
+                    <div class="col-12">
+                        <div class="card card-hover border shadow-sm">
+                            <div class="card-body">
+                                <div class="row g-3 align-items-center">
+                                    <div class="col-md-8">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div class="flex-grow-1 me-3">
+                                                <h5 class="mb-1 text-primary-ifpi fw-bold">
+                                                    {% if i == "1" %}Desenvolvedor Web Django{% elif i == "2" %}Analista de RH - Vaga Afirmativa{% elif i == "3" %}Estágio em Marketing Digital{% elif i == "4" %}Jovem Aprendiz Administrativo{% elif i == "5" %}Professor Substituto de Matemática{% else %}Assistente Financeiro{% endif %}
+                                                </h5>
+                                                <p class="text-muted mb-1 small"><i class="bi bi-building me-1"></i>
+                                                    {% if i == "1" %}Sertão Tech Soluções{% elif i == "2" %}Prefeitura de Paulistana{% elif i == "3" %}Agência Nordeste Digital{% elif i == "4" %}Atacadão Popular{% elif i == "5" %}SEDI - Secretaria de Educação{% else %}Comercial ABC Distribuidora{% endif %}
+                                                </p>
+                                                <p class="text-muted small mb-0"><i class="bi bi-geo-alt me-1"></i>Paulistana - PI</p>
+                                            </div>
+                                            <span class="badge bg-success flex-shrink-0">Aberta</span>
+                                        </div>
+                                        <div class="d-flex flex-wrap gap-2 mb-2">
+                                            <span class="badge rounded-pill bg-light text-dark border">
+                                                <i class="bi bi-clock me-1"></i>{% if i == "3" %}Estágio{% elif i == "4" %}Jovem Aprendiz{% else %}CLT{% endif %}
+                                            </span>
+                                            <span class="badge rounded-pill bg-light text-dark border">
+                                                <i class="bi bi-laptop me-1"></i>{% if i == "1" %}Híbrido{% else %}Presencial{% endif %}
+                                            </span>
+                                            <span class="badge rounded-pill bg-info text-dark">
+                                                <i class="bi bi-people me-1"></i>{{ i|add:0 }} vaga{{ i|add:0|pluralize }}
+                                            </span>
+                                        </div>
+                                        <p class="text-muted small mb-0 d-none d-md-block">
+                                            Descrição resumida da vaga: experiência com Django, Python, bancos relacionais e versionamento Git. Boa comunicação e trabalho em equipe.
+                                        </p>
+                                    </div>
+                                    <div class="col-md-4 d-md-flex flex-md-column align-items-md-end justify-content-md-center">
+                                        <div class="mb-2 mb-md-3 text-start text-md-end">
+                                            <h5 class="fw-bold mb-0 text-success">
+                                                R$ {% if i == "1" %}3.200{% elif i == "2" %}2.800{% elif i == "3" %}900{% elif i == "4" %}1.212{% elif i == "5" %}4.500{% else %}1.800{% endif %},00
+                                            </h5>
+                                            <small class="text-muted">mensal</small>
+                                        </div>
+                                        <a href="{% url 'jobs:detail' forloop.counter %}" class="btn btn-primary-ifpi w-100 w-md-auto px-4">
+                                            <i class="bi bi-eye me-1"></i>Ver Detalhes
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% endfor %}
+                </div>
+
+                <nav class="mt-4" aria-label="Paginação">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item disabled"><a class="page-link" href="#">Anterior</a></li>
+                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                        <li class="page-item"><a class="page-link" href="#">Próxima</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,497 @@
+{% extends 'base.html' %}
+{% block title %}Painel - Opurtunet{% endblock %}
+{% block content %}
+<section class="py-4 bg-primary-ifpi text-white overflow-hidden position-relative">
+    <div class="position-absolute top-0 end-0 opacity-10 d-none d-md-block" style="font-size: 20rem; transform: translate(20%,-20%);">
+        <i class="bi bi-lightning-charge-fill"></i>
+    </div>
+    <div class="container position-relative">
+        <div class="row align-items-center g-4">
+            <div class="col-md-8">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb text-white-50 small">
+                        <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-white-50 text-decoration-none">Início</a></li>
+                        <li class="breadcrumb-item active text-white" aria-current="page">Meu Painel</li>
+                    </ol>
+                </nav>
+                <div class="d-flex align-items-center gap-4">
+                    <div class="rounded-circle bg-white bg-opacity-25 border-2 border-white d-flex align-items-center justify-content-center flex-shrink-0 shadow" style="width: 88px; height: 88px; font-size: 2.5rem; backdrop-filter: blur(6px);">
+                        {% if usuario.tipo_usuario == 'empresa' %}<i class="bi bi-building-gear"></i>
+                        {% elif usuario.tipo_usuario == 'proprietario' %}<i class="bi bi-house-up"></i>
+                        {% else %}<i class="bi bi-person-badge"></i>{% endif %}
+                    </div>
+                    <div>
+                        <h1 class="fw-bold mb-1 display-6">Olá, {{ usuario.nome_completo|default:usuario.email|truncatewords:3 }} 👋</h1>
+                        <p class="mb-0 opacity-90">
+                            {% if usuario.tipo_usuario == 'empresa' %}
+                                <span class="badge bg-primary-subtle text-primary-emphasis border border-white border-opacity-25 rounded-pill"><i class="bi bi-building me-1"></i>Painel da Empresa</span>
+                            {% elif usuario.tipo_usuario == 'proprietario' %}
+                                <span class="badge bg-warning-subtle text-warning-emphasis border border-white border-opacity-25 rounded-pill"><i class="bi bi-house-door me-1"></i>Painel do Proprietário</span>
+                            {% else %}
+                                <span class="badge bg-success-subtle text-success-emphasis border border-white border-opacity-25 rounded-pill"><i class="bi bi-person-arms-up me-1"></i>Painel do Candidato</span>
+                            {% endif %}
+                            <span class="ms-2 small"><i class="bi bi-clock-history me-1"></i>Último acesso: hoje às 09:15</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 d-none d-md-block text-end">
+                <a href="{% url 'core:home' %}" class="btn btn-light text-primary-ifpi rounded-pill px-4 fw-semibold">
+                    <i class="bi bi-search me-2"></i>Explorar oportunidades
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-4 bg-light">
+    <div class="container">
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3">
+                <div class="card border-0 shadow-sm rounded-4 h-100">
+                    <div class="card-body d-flex align-items-center gap-3">
+                        <div class="rounded-4 bg-primary-subtle text-primary-ifpi d-flex align-items-center justify-content-center" style="width: 56px; height: 56px;">
+                            <i class="bi bi-briefcase fs-3"></i>
+                        </div>
+                        <div>
+                            <small class="text-muted d-block">Vagas abertas</small>
+                            <h4 class="fw-bold mb-0">{{ total_vagas }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card border-0 shadow-sm rounded-4 h-100">
+                    <div class="card-body d-flex align-items-center gap-3">
+                        <div class="rounded-4 bg-info-subtle text-info d-flex align-items-center justify-content-center" style="width: 56px; height: 56px;">
+                            <i class="bi bi-house-heart fs-3"></i>
+                        </div>
+                        <div>
+                            <small class="text-muted d-block">Imóveis disponíveis</small>
+                            <h4 class="fw-bold mb-0">{{ total_imoveis }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card border-0 shadow-sm rounded-4 h-100">
+                    <div class="card-body d-flex align-items-center gap-3">
+                        <div class="rounded-4 bg-success-subtle text-success d-flex align-items-center justify-content-center" style="width: 56px; height: 56px;">
+                            <i class="bi bi-people fs-3"></i>
+                        </div>
+                        <div>
+                            <small class="text-muted d-block">Comunidade ativa</small>
+                            <h4 class="fw-bold mb-0">{{ total_usuarios }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card border-0 shadow-sm rounded-4 h-100 border-start border-4 border-warning">
+                    <div class="card-body d-flex align-items-center gap-3">
+                        <div class="rounded-4 bg-warning-subtle text-warning d-flex align-items-center justify-content-center" style="width: 56px; height: 56px;">
+                            <i class="bi bi-trophy fs-3"></i>
+                        </div>
+                        <div>
+                            <small class="text-muted d-block">Nível</small>
+                            <h4 class="fw-bold mb-0">Prata <small class="fs-6 text-muted">/ 100pts</small></h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <aside class="col-lg-3">
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden sticky-top" style="top: 90px;">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item py-3 px-4 bg-light">
+                            <small class="text-muted text-uppercase fw-bold"><i class="bi bi-list me-1"></i>Navegação</small>
+                        </div>
+                        <a href="{% url 'core:dashboard' %}" class="list-group-item list-group-item-action py-3 px-4 active border-0 bg-primary-ifpi text-white" aria-current="true">
+                            <i class="bi bi-speedometer2 me-2"></i>Visão Geral
+                        </a>
+                        {% if usuario.tipo_usuario == 'candidato' %}
+                        <a href="#minhas-candidaturas" class="list-group-item list-group-item-action py-3 px-4 border-0">
+                            <i class="bi bi-send-check me-2"></i>Minhas candidaturas
+                        </a>
+                        <a href="#perfil" class="list-group-item list-group-item-action py-3 px-4 border-0">
+                            <i class="bi bi-file-earmark-person me-2"></i>Meu perfil / Currículo
+                        </a>
+                        <a href="#recomendadas" class="list-group-item list-group-item-action py-3 px-4 border-0">
+                            <i class="bi bi-stars me-2"></i>Vagas recomendadas
+                        </a>
+                        {% elif usuario.tipo_usuario == 'empresa' %}
+                        <a href="#minhas-vagas" class="list-group-item list-group-item-action py-3 px-4 border-0">
+                            <i class="bi bi-megaphone me-2"></i>Publicar nova vaga
+                        </a>
+                        <a href="#minhas-vagas" class="list-group-item list-group-item-action py-3 px-4 border-0">
+                            <i class="bi bi-list-check me-2"></i>Gerenciar vagas
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
+                            <i class="bi bi-people me-2"></i>Candidatos recebidos
+                        </a>
+                        {% else %}
+                        <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
+                            <i class="bi bi-plus-circle me-2"></i>Anunciar novo imóvel
+                        </a>
+                        <a href="#meus-imoveis" class="list-group-item list-group-item-action py-3 px-4 border-0">
+                            <i class="bi bi-house-gear me-2"></i>Meus imóveis
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
+                            <i class="bi bi-envelope-open me-2"></i>Mensagens
+                        </a>
+                        {% endif %}
+                        <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
+                            <i class="bi bi-gear me-2"></i>Configurações
+                        </a>
+                        <a href="{% url 'core:logout' %}" class="list-group-item list-group-item-action py-3 px-4 border-0 text-danger">
+                            <i class="bi bi-box-arrow-right me-2"></i>Sair da conta
+                        </a>
+                    </div>
+                </div>
+            </aside>
+
+            <div class="col-lg-9">
+                {% if usuario.tipo_usuario == 'empresa' %}
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-sm rounded-4 bg-primary text-white h-100">
+                            <div class="card-body">
+                                <p class="small opacity-75 mb-1"><i class="bi bi-megaphone me-1"></i>Total de vagas</p>
+                                <h2 class="fw-bold display-5 mb-0">{{ vagas|length }}</h2>
+                                <p class="small opacity-75 mt-2 mb-0">{{ qtd_vagas_abertas }} abertas agora →</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-sm rounded-4 bg-success text-white h-100">
+                            <div class="card-body">
+                                <p class="small opacity-75 mb-1"><i class="bi bi-people me-1"></i>Candidaturas recebidas</p>
+                                <h2 class="fw-bold display-5 mb-0">{{ qtd_candidaturas_total }}</h2>
+                                <p class="small opacity-75 mt-2 mb-0">+12 hoje</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-sm rounded-4 bg-warning text-dark h-100">
+                            <div class="card-body">
+                                <p class="small opacity-75 mb-1"><i class="bi bi-calendar-check me-1"></i>Entrevistas</p>
+                                <h2 class="fw-bold display-5 mb-0">07</h2>
+                                <p class="small opacity-75 mt-2 mb-0">Agendadas para essa semana</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm rounded-4 mb-4" id="minhas-vagas">
+                    <div class="card-header bg-white d-flex flex-wrap gap-2 justify-content-between align-items-center py-3 px-4 rounded-4">
+                        <div>
+                            <h5 class="fw-bold mb-0"><i class="bi bi-list-check text-primary me-2"></i>Vagas publicadas</h5>
+                            <small class="text-muted">Gerencie e acompanhe suas oportunidades</small>
+                        </div>
+                        <button class="btn btn-primary-ifpi rounded-pill px-4"><i class="bi bi-plus me-1"></i>Nova vaga</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Vaga</th><th>Tipo</th><th>Candidaturas</th><th>Status</th><th class="text-end">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;"><i class="bi bi-briefcase"></i></div>
+                                            <div>
+                                                <div class="fw-semibold">Desenvolvedor Django</div>
+                                                <small class="text-muted">Publicada em 20/09/2026</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="badge bg-light text-dark border">CLT • Híbrido</span></td>
+                                    <td><span class="badge rounded-pill bg-info text-dark fw-semibold">27</span></td>
+                                    <td><span class="badge bg-success">Aberta</span></td>
+                                    <td class="text-end">
+                                        <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></button>
+                                        <a href="{% url 'jobs:detail' 1 %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;"><i class="bi bi-person-gear"></i></div>
+                                            <div>
+                                                <div class="fw-semibold">Analista de RH</div>
+                                                <small class="text-muted">Publicada em 18/09/2026</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="badge bg-light text-dark border">CLT • Presencial</span></td>
+                                    <td><span class="badge rounded-pill bg-info text-dark fw-semibold">42</span></td>
+                                    <td><span class="badge bg-success">Aberta</span></td>
+                                    <td class="text-end">
+                                        <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></button>
+                                        <a href="{% url 'jobs:detail' 2 %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="rounded-circle bg-warning-subtle text-warning d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;"><i class="bi bi-megaphone"></i></div>
+                                            <div>
+                                                <div class="fw-semibold">Estágio em Marketing</div>
+                                                <small class="text-muted">Publicada em 15/09/2026</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="badge bg-light text-dark border">Estágio</span></td>
+                                    <td><span class="badge rounded-pill bg-info text-dark fw-semibold">59</span></td>
+                                    <td><span class="badge bg-secondary">Fechada</span></td>
+                                    <td class="text-end">
+                                        <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></button>
+                                        <a href="{% url 'jobs:detail' 3 %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                {% elif usuario.tipo_usuario == 'proprietario' %}
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-sm rounded-4 bg-primary text-white h-100">
+                            <div class="card-body">
+                                <p class="small opacity-75 mb-1"><i class="bi bi-house-heart me-1"></i>Imóveis cadastrados</p>
+                                <h2 class="fw-bold display-5 mb-0">{{ imoveis|length }}</h2>
+                                <p class="small opacity-75 mt-2 mb-0">{{ imoveis_disponiveis }} com disponibilidade</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-sm rounded-4 bg-info text-white h-100">
+                            <div class="card-body">
+                                <p class="small opacity-75 mb-1"><i class="bi bi-eye me-1"></i>Visualizações (30d)</p>
+                                <h2 class="fw-bold display-5 mb-0">2.156</h2>
+                                <p class="small opacity-75 mt-2 mb-0">+18% vs mês passado</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-sm rounded-4 bg-warning text-dark h-100">
+                            <div class="card-body">
+                                <p class="small opacity-75 mb-1"><i class="bi bi-chat-dots me-1"></i>Interessados</p>
+                                <h2 class="fw-bold display-5 mb-0">23</h2>
+                                <p class="small opacity-75 mt-2 mb-0">esse mês</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm rounded-4" id="meus-imoveis">
+                    <div class="card-header bg-white d-flex flex-wrap gap-2 justify-content-between align-items-center py-3 px-4 rounded-4">
+                        <div>
+                            <h5 class="fw-bold mb-0"><i class="bi bi-house-gear text-primary me-2"></i>Meus imóveis para alugar</h5>
+                            <small class="text-muted">Gerencie seu portfólio</small>
+                        </div>
+                        <button class="btn btn-primary rounded-pill px-4"><i class="bi bi-plus me-1"></i>Anunciar imóvel</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 align-middle">
+                            <thead class="table-light">
+                                <tr><th>Imóvel</th><th>Aluguel</th><th>Visualizações</th><th>Status</th><th class="text-end">Ações</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><div class="fw-semibold">Apartamento 2q Mobiliado</div><small class="text-muted">Centro, Paulistana - PI</small></td>
+                                    <td><strong>R$ 950,00</strong></td><td><span class="badge rounded-pill bg-info text-dark">587</span></td>
+                                    <td><span class="badge bg-success">Disponível</span></td>
+                                    <td class="text-end"><button class="btn btn-sm btn-outline-secondary">Editar</button></td>
+                                </tr>
+                                <tr>
+                                    <td><div class="fw-semibold">Casa Térrea 3q</div><small class="text-muted">Boa Vista, Paulistana</small></td>
+                                    <td><strong>R$ 1.450,00</strong></td><td><span class="badge rounded-pill bg-info text-dark">724</span></td>
+                                    <td><span class="badge bg-success">Disponível</span></td>
+                                    <td class="text-end"><button class="btn btn-sm btn-outline-secondary">Editar</button></td>
+                                </tr>
+                                <tr>
+                                    <td><div class="fw-semibold">Kitnet Centro</div><small class="text-muted">Centro, Paulistana</small></td>
+                                    <td><strong>R$ 650,00</strong></td><td><span class="badge rounded-pill bg-info text-dark">845</span></td>
+                                    <td><span class="badge bg-secondary">Alugado</span></td>
+                                    <td class="text-end"><button class="btn btn-sm btn-outline-secondary">Editar</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                {% else %}
+                <div class="row g-3 mb-4" id="minhas-candidaturas">
+                    <div class="col-6 col-md-3">
+                        <div class="card border-0 shadow-sm rounded-4 h-100 border-start border-4 border-primary">
+                            <div class="card-body">
+                                <p class="small text-muted mb-1"><i class="bi bi-send me-1"></i>Enviadas</p>
+                                <h3 class="fw-bold mb-0">{{ cand_enviadas|default:0 }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card border-0 shadow-sm rounded-4 h-100 border-start border-4 border-info">
+                            <div class="card-body">
+                                <p class="small text-muted mb-1"><i class="bi bi-hourglass-split me-1"></i>Em análise</p>
+                                <h3 class="fw-bold mb-0 text-info">{{ cand_analise|default:0 }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card border-0 shadow-sm rounded-4 h-100 border-start border-4 border-warning">
+                            <div class="card-body">
+                                <p class="small text-muted mb-1"><i class="bi bi-calendar-week me-1"></i>Entrevistas</p>
+                                <h3 class="fw-bold mb-0 text-warning">{{ cand_entrevista|default:0 }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card border-0 shadow-sm rounded-4 h-100 border-start border-4 border-success">
+                            <div class="card-body">
+                                <p class="small text-muted mb-1"><i class="bi bi-trophy me-1"></i>Aprovadas 🎉</p>
+                                <h3 class="fw-bold mb-0 text-success">{{ cand_aprovadas|default:0 }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-header bg-white py-3 px-4 rounded-4">
+                        <h5 class="fw-bold mb-0"><i class="bi bi-send-check text-primary-ifpi me-2"></i>Histórico de candidaturas</h5>
+                        <small class="text-muted">Acompanhe cada etapa do seu processo seletivo</small>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr><th>Vaga</th><th>Empresa</th><th>Data envio</th><th>Status</th><th class="text-end">Ação</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><div class="fw-semibold">Desenvolvedor Web Django</div><small class="text-muted">Híbrido • R$ 3.200</small></td>
+                                    <td>Sertão Tech</td><td>21/09/2026</td>
+                                    <td><span class="badge rounded-pill bg-info text-dark">Em análise</span></td>
+                                    <td class="text-end"><a href="{% url 'jobs:detail' 1 %}" class="btn btn-sm btn-outline-primary">Ver</a></td>
+                                </tr>
+                                <tr>
+                                    <td><div class="fw-semibold">Estágio em Marketing</div><small class="text-muted">Presencial • R$ 900</small></td>
+                                    <td>Agência Nordeste</td><td>20/09/2026</td>
+                                    <td><span class="badge rounded-pill bg-warning text-dark">Entrevista 24/09</span></td>
+                                    <td class="text-end"><a href="{% url 'jobs:detail' 3 %}" class="btn btn-sm btn-outline-primary">Ver</a></td>
+                                </tr>
+                                <tr>
+                                    <td><div class="fw-semibold">Jovem Aprendiz Administrativo</div><small class="text-muted">Presencial • R$ 1.212</small></td>
+                                    <td>Atacadão Popular</td><td>18/09/2026</td>
+                                    <td><span class="badge rounded-pill bg-success">Aprovado 🎉</span></td>
+                                    <td class="text-end"><button class="btn btn-sm btn-success">Conferir</button></td>
+                                </tr>
+                                <tr>
+                                    <td><div class="fw-semibold">Assistente Financeiro</div><small class="text-muted">Presencial • R$ 1.800</small></td>
+                                    <td>Comercial ABC</td><td>15/09/2026</td>
+                                    <td><span class="badge rounded-pill bg-danger">Recusado</span></td>
+                                    <td class="text-end"><a href="{% url 'jobs:list' %}" class="btn btn-sm btn-outline-secondary">Outras</a></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="row g-4 mb-4" id="perfil">
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm rounded-4 h-100">
+                            <div class="card-header bg-white py-3 px-4 rounded-4 d-flex justify-content-between align-items-center">
+                                <h5 class="fw-bold mb-0"><i class="bi bi-file-earmark-person text-primary-ifpi me-2"></i>Completude do Perfil</h5>
+                                <button class="btn btn-sm btn-outline-primary rounded-pill"><i class="bi bi-pencil"></i> Editar</button>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between small mb-1"><span>Informações pessoais</span><strong class="text-success">100%</strong></div>
+                                    <div class="progress" style="height: 10px;"><div class="progress-bar bg-success" style="width:100%"></div></div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between small mb-1"><span>Formação acadêmica</span><strong class="text-info">75%</strong></div>
+                                    <div class="progress" style="height: 10px;"><div class="progress-bar bg-info" style="width:75%"></div></div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between small mb-1"><span>Experiências profissionais</span><strong class="text-warning">50%</strong></div>
+                                    <div class="progress" style="height: 10px;"><div class="progress-bar bg-warning" style="width:50%"></div></div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between small mb-1"><span>Habilidades e idiomas</span><strong class="text-warning">40%</strong></div>
+                                    <div class="progress" style="height: 10px;"><div class="progress-bar bg-warning" style="width:40%"></div></div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between small mb-1"><span>Currículo PDF anexado</span><strong class="text-danger">0%</strong></div>
+                                    <div class="progress" style="height: 10px;"><div class="progress-bar bg-danger" style="width:0%"></div></div>
+                                </div>
+                                <div class="p-3 bg-light rounded-4 small d-flex gap-2 align-items-center">
+                                    <i class="bi bi-lightbulb text-warning fs-4"></i>
+                                    <span class="text-muted m-0">Perfis <strong>100% completos</strong> têm <strong>3x mais chances</strong> de serem selecionados!</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm rounded-4 h-100" id="recomendadas">
+                            <div class="card-header bg-white py-3 px-4 rounded-4">
+                                <h5 class="fw-bold mb-0"><i class="bi bi-stars text-warning me-2"></i>Vagas recomendadas para você</h5>
+                                <small class="text-muted">Baseadas no seu perfil e habilidades</small>
+                            </div>
+                            <div class="list-group list-group-flush">
+                                <a href="{% url 'jobs:detail' 1 %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-start py-3 border-0">
+                                    <div>
+                                        <strong>Desenvolvedor Back-end Python</strong>
+                                        <div class="small text-muted">Nordeste Tech • R$ 3.500 • Paulistana</div>
+                                    </div>
+                                    <span class="badge rounded-pill bg-success">Match 95%</span>
+                                </a>
+                                <a href="{% url 'jobs:detail' 2 %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-start py-3 border-0">
+                                    <div>
+                                        <strong>Estágio TI - Suporte</strong>
+                                        <div class="small text-muted">Secretaria de Educação • R$ 900 bolsa</div>
+                                    </div>
+                                    <span class="badge rounded-pill bg-success">Match 88%</span>
+                                </a>
+                                <a href="{% url 'jobs:detail' 3 %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-start py-3 border-0">
+                                    <div>
+                                        <strong>Analista de Suporte Jr.</strong>
+                                        <div class="small text-muted">Conecta Telecom • R$ 1.800 • Híbrido</div>
+                                    </div>
+                                    <span class="badge rounded-pill bg-info text-dark">Match 72%</span>
+                                </a>
+                                <a href="{% url 'jobs:list' %}" class="list-group-item list-group-item-action text-center py-3 border-0 text-primary-ifpi fw-semibold bg-light rounded-4 m-3 mt-0">
+                                    Ver todas as vagas recomendadas →
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="card border-0 rounded-4 bg-gradient text-white shadow-sm" style="background: linear-gradient(135deg,#165030 0%,#2d8a5a 100%);">
+                    <div class="card-body p-4 p-md-5">
+                        <div class="row align-items-center g-4">
+                            <div class="col-md-8">
+                                <h3 class="fw-bold mb-2"><i class="bi bi-gift me-2"></i>Desbloqueie benefícios exclusivos!</h3>
+                                <p class="opacity-90 mb-0 mb-md-0">Complete seu perfil, compartilhe com amigos e ganhe destaque nas buscas. A comunidade Opurtunet agradece 💚</p>
+                            </div>
+                            <div class="col-md-4 text-md-end">
+                                <a href="#" class="btn btn-warning text-dark rounded-pill px-4 fw-semibold">
+                                    <i class="bi bi-trophy me-2"></i>Conhecer benefícios
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

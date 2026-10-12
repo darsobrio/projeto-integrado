@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% block title %}Entrar - Opurtunet{% endblock %}
+{% block content %}
+<section class="py-5 bg-light" style="min-height: calc(100vh - 200px);">
+    <div class="container">
+        <div class="row justify-content-center align-items-center">
+            <div class="col-lg-7">
+                {% if logged_out %}
+                    <div class="alert alert-info alert-dismissible fade show rounded-4 border-0 mb-4 shadow-sm d-flex align-items-center">
+                        <i class="bi bi-info-circle-fill fs-4 me-2"></i>
+                        <div>Você saiu da sua conta. Entre novamente para continuar aproveitando as oportunidades.</div>
+                        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endif %}
+
+                <div class="row g-0 overflow-hidden rounded-5 shadow-lg bg-white">
+                    <div class="col-md-5 bg-primary-ifpi text-white p-5 d-none d-md-flex flex-column justify-content-between">
+                        <div>
+                            <i class="bi bi-lightning-charge-fill display-3 mb-3"></i>
+                            <h3 class="fw-bold mb-3">Bem-vindo de volta!</h3>
+                            <p class="opacity-90 mb-0">Entre para acessar seu painel, enviar candidaturas, gerenciar vagas ou imóveis.</p>
+                        </div>
+                        <div class="border-top border-white-50 pt-4 mt-4">
+                            <h6 class="fw-bold mb-3">Acesso rápido:</h6>
+                            <ul class="list-unstyled small">
+                                <li class="mb-2"><i class="bi bi-check2-circle me-2"></i>Candidaturas em tempo real</li>
+                                <li class="mb-2"><i class="bi bi-check2-circle me-2"></i>Publicar vagas em 1 clique</li>
+                                <li class="mb-2"><i class="bi bi-check2-circle me-2"></i>Imóveis organizados</li>
+                                <li><i class="bi bi-check2-circle me-2"></i>100% gratuito para comunidade</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-7 p-4 p-md-5">
+                        <div class="text-center mb-4">
+                            <i class="bi bi-box-arrow-in-right display-4 text-primary-ifpi"></i>
+                            <h2 class="fw-bold text-primary-ifpi mt-2">Entrar</h2>
+                            <p class="text-muted small mb-0">Use seu e-mail e senha cadastrados</p>
+                        </div>
+
+                        <form method="POST" class="row g-3 needs-validation" novalidate>
+                            {% csrf_token %}
+                            {% if next %}
+                                <input type="hidden" name="next" value="{{ next }}">
+                            {% endif %}
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">E-mail institucional / pessoal</label>
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-envelope-at text-primary-ifpi"></i></span>
+                                    <input type="email" class="form-control border-start-0" name="username" placeholder="voce@opurtunet.com" required autofocus autocomplete="email">
+                                </div>
+                                <div class="invalid-feedback">Informe um e-mail válido.</div>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">Senha</label>
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-shield-lock text-primary-ifpi"></i></span>
+                                    <input type="password" id="senhaInput" class="form-control border-start-0 border-end-0" name="password" placeholder="Sua senha" required autocomplete="current-password">
+                                    <button class="btn btn-outline-secondary border-start-0" type="button" onclick="toggleSenha()" title="Mostrar senha"><i id="senhaIcone" class="bi bi-eye"></i></button>
+                                </div>
+                                <div class="invalid-feedback">Digite sua senha.</div>
+                            </div>
+                            <div class="col-12 d-flex justify-content-between align-items-center pt-1">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="lembrar" name="remember">
+                                    <label class="form-check-label small" for="lembrar">Manter conectado</label>
+                                </div>
+                                <a href="#" class="text-primary-ifpi text-decoration-none small fw-semibold">Esqueceu a senha?</a>
+                            </div>
+                            <div class="d-grid gap-2 pt-2">
+                                <button class="btn btn-primary-ifpi btn-lg rounded-pill fw-semibold" type="submit">
+                                    <i class="bi bi-box-arrow-in-right me-2"></i>Entrar na minha conta
+                                </button>
+                            </div>
+                        </form>
+
+                        <div class="my-4 position-relative">
+                            <div class="position-absolute top-50 start-0 end-0 border-top"></div>
+                            <div class="position-relative text-center">
+                                <span class="px-3 bg-white text-muted small">primeiro acesso?</span>
+                            </div>
+                        </div>
+
+                        <div class="d-grid">
+                            <a href="{% url 'core:register' %}" class="btn btn-outline-secondary btn-lg rounded-pill">
+                                <i class="bi bi-person-plus me-2"></i>Criar minha conta gratuita
+                            </a>
+                        </div>
+
+                        <div class="mt-4 p-3 bg-light rounded-4 small text-center">
+                            <p class="mb-1"><strong>Demonstração:</strong> use o superusuário</p>
+                            <code class="text-primary-ifpi fw-bold">admin@opurtunet.com</code> / <code class="text-primary-ifpi fw-bold">Senha123!</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<script>
+function toggleSenha() {
+    const input = document.getElementById('senhaInput');
+    const icone = document.getElementById('senhaIcone');
+    if (input.type === 'password') { input.type = 'text'; icone.className = 'bi bi-eye-slash'; }
+    else { input.type = 'password'; icone.className = 'bi bi-eye'; }
+}
+(() => {
+    'use strict';
+    const forms = document.querySelectorAll('.needs-validation');
+    Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
+})();
+</script>
+{% endblock %}

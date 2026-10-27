@@ -3,73 +3,186 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Opurtunet{% endblock %}</title>
+    <title>{% block title %}Oportunet{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <style>
         :root {
-            --primary: #1e5f3a;
-            --primary-dark: #165030;
-            --secondary: #f5a623;
-            --light: #f8f9fa;
+            --bg: #fafafa;
+            --surface: #ffffff;
+            --border: #ebebeb;
+            --border-strong: #dcdcdc;
+            --text: #18181b;
+            --muted: #71717a;
+            --accent: #15803d;
+            --accent-dark: #14532d;
+            --accent-soft: #f0fdf4;
+            --radius: 14px;
         }
-        .bg-primary-ifpi { background-color: var(--primary); }
-        .text-primary-ifpi { color: var(--primary); }
-        .btn-primary-ifpi { background-color: var(--primary); border-color: var(--primary); color: #fff; }
-        .btn-primary-ifpi:hover { background-color: var(--primary-dark); border-color: var(--primary-dark); color: #fff; }
-        .hero-section {
-            background: linear-gradient(135deg, #1e5f3a 0%, #2d8a5a 100%);
-            color: #fff;
-            padding: 4rem 0;
+        * { -webkit-font-smoothing: antialiased; }
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            font-size: 0.95rem;
         }
-        .card-hover { transition: transform 0.2s, box-shadow 0.2s; }
-        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
-        .badge-status { font-size: 0.75rem; }
-        .footer { background-color: #1a1a1a; color: #ccc; padding: 2rem 0; margin-top: 3rem; }
-        .filter-sidebar { background-color: #fafafa; border-radius: 8px; padding: 1.5rem; }
-        .nav-link.active { font-weight: bold; }
-        .min-h-2lh { min-height: 3rem; display: flex; align-items: center; }
-        @media (min-width: 768px) {
-            .w-md-auto { width: auto !important; }
+        a { color: inherit; text-decoration: none; }
+        h1, h2, h3, h4, h5 { letter-spacing: -0.02em; font-weight: 600; }
+        .text-muted { color: var(--muted) !important; }
+        .text-accent { color: var(--accent) !important; }
+
+        /* ---------- Navegação ---------- */
+        .site-nav {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 1030;
         }
+        .brand { font-weight: 700; font-size: 1.15rem; letter-spacing: -0.03em; }
+        .brand-dot { color: var(--accent); }
+        .nav-min {
+            color: var(--muted);
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 0.45rem 0.75rem;
+            border-radius: 9px;
+            transition: color .15s, background-color .15s;
+        }
+        .nav-min:hover { color: var(--text); background: #f4f4f5; }
+        .nav-min.active { color: var(--text); background: #f4f4f5; }
+        .navbar-toggler:focus { box-shadow: none; }
+
+        /* ---------- Botões ---------- */
+        .btn { border-radius: 10px; font-weight: 500; font-size: 0.9rem; }
+        .btn-accent { background: var(--accent); border: 1px solid var(--accent); color: #fff; }
+        .btn-accent:hover { background: var(--accent-dark); border-color: var(--accent-dark); color: #fff; }
+        .btn-ghost { background: var(--surface); border: 1px solid var(--border-strong); color: var(--text); }
+        .btn-ghost:hover { background: #fafafa; border-color: #c9c9c9; color: var(--text); }
+        .btn-soft { background: var(--accent-soft); border: 1px solid transparent; color: var(--accent); }
+        .btn-soft:hover { background: #dcfce7; color: var(--accent-dark); }
+        .btn-check:checked + .btn-ghost { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-dark); }
+
+        /* ---------- Superfícies ---------- */
+        .card-min {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            transition: border-color .15s, box-shadow .15s, transform .15s;
+        }
+        .card-min:hover { border-color: var(--border-strong); box-shadow: 0 6px 20px rgba(0,0,0,.045); }
+        .card-flat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+
+        /* ---------- Chips / badges ---------- */
+        .chip {
+            display: inline-flex; align-items: center; gap: .35rem;
+            font-size: .76rem; font-weight: 500;
+            padding: .28rem .65rem; border-radius: 999px;
+            background: #f4f4f5; color: #52525b; border: 1px solid var(--border);
+            white-space: nowrap;
+        }
+        .chip-accent { background: var(--accent-soft); color: var(--accent); border-color: #dcfce7; }
+        .chip-muted { background: #f4f4f5; color: var(--muted); }
+
+        /* ---------- Tipografia de seção ---------- */
+        .section { padding: 3.25rem 0; }
+        .eyebrow {
+            font-size: .74rem; text-transform: uppercase; letter-spacing: .09em;
+            font-weight: 600; color: var(--muted);
+        }
+        .section-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 0; }
+        .page-title { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.03em; }
+        .lead-min { color: var(--muted); font-size: 1rem; line-height: 1.6; }
+        .divider { border-top: 1px solid var(--border); }
+
+        /* ---------- Formulários ---------- */
+        .form-label { font-weight: 500; font-size: .875rem; color: #3f3f46; }
+        .form-control, .form-select {
+            border: 1px solid var(--border-strong);
+            border-radius: 10px;
+            padding: .6rem .8rem;
+            font-size: .9rem;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(21,128,61,.10);
+        }
+        .form-control::placeholder { color: #b4b4bb; }
+        .form-check-input:checked { background-color: var(--accent); border-color: var(--accent); }
+        .form-text { color: var(--muted); }
+        .input-hint { font-size: .8rem; color: var(--muted); }
+
+        /* ---------- Estado vazio ---------- */
+        .empty-state {
+            border: 1px dashed var(--border-strong);
+            border-radius: var(--radius);
+            padding: 3rem 1.5rem;
+            text-align: center;
+            background: var(--surface);
+        }
+        .empty-state i { font-size: 1.8rem; color: #a1a1aa; }
+
+        /* ---------- Alertas ---------- */
+        .alert { border: 1px solid var(--border); border-radius: 12px; font-size: .9rem; }
+        .alert-success { background: var(--accent-soft); color: var(--accent-dark); border-color: #dcfce7; }
+        .alert-danger,
+        .alert-error { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
+        .alert-info { background: #eff6ff; color: #1e40af; border-color: #dbeafe; }
+        .alert-warning { background: #fffbeb; color: #92400e; border-color: #fde68a; }
+
+        /* ---------- Rodapé ---------- */
+        .site-footer {
+            border-top: 1px solid var(--border);
+            background: var(--surface);
+            padding: 2rem 0;
+            margin-top: auto;
+            color: var(--muted);
+            font-size: .875rem;
+        }
+        @media (min-width: 992px) { .w-lg-auto { width: auto !important; } }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
 <body class="d-flex flex-column min-vh-100">
-    <nav class="navbar navbar-expand-lg bg-primary-ifpi navbar-dark sticky-top shadow">
-        <div class="container">
-            <a class="navbar-brand d-flex align-items-center" href="{% url 'core:home' %}">
-                <i class="bi bi-lightning-charge-fill me-2 fs-3"></i>
-                <strong>Opurtunet</strong>
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain">
+    <nav class="navbar navbar-expand-lg site-nav py-0">
+        <div class="container py-2">
+            <a class="navbar-brand brand" href="{% url 'core:home' %}">Oportunet<span class="brand-dot">.</span></a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMain" aria-label="Menu">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navMain">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item"><a class="nav-link" href="{% url 'core:home' %}"><i class="bi bi-house-door me-1"></i>Início</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'jobs:list' %}"><i class="bi bi-briefcase me-1"></i>Vagas</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'properties:list' %}"><i class="bi bi-house-heart me-1"></i>Imóveis</a></li>
+                <ul class="navbar-nav mx-lg-auto my-2 my-lg-0 gap-lg-1">
+                    <li class="nav-item"><a class="nav-link nav-min" href="{% url 'core:home' %}">Início</a></li>
+                    <li class="nav-item"><a class="nav-link nav-min" href="{% url 'jobs:list' %}">Vagas</a></li>
+                    <li class="nav-item"><a class="nav-link nav-min" href="{% url 'properties:list' %}">Imóveis</a></li>
                     {% if user.is_authenticated %}
-                        <li class="nav-item"><a class="nav-link" href="{% url 'core:dashboard' %}"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a></li>
+                        <li class="nav-item"><a class="nav-link nav-min" href="{% url 'core:dashboard' %}">Painel</a></li>
                     {% endif %}
                 </ul>
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav align-items-lg-center gap-2">
                     {% if user.is_authenticated %}
+                        {% if user.tipo_usuario == 'empresa' %}
+                            <li class="nav-item"><a class="btn btn-soft btn-sm px-3" href="{% url 'jobs:create' %}"><i class="bi bi-plus-lg me-1"></i>Publicar vaga</a></li>
+                        {% elif user.tipo_usuario == 'proprietario' %}
+                            <li class="nav-item"><a class="btn btn-soft btn-sm px-3" href="{% url 'properties:create' %}"><i class="bi bi-plus-lg me-1"></i>Anunciar imóvel</a></li>
+                        {% endif %}
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
-                                <i class="bi bi-person-circle me-1"></i>{{ user.nome_completo|default:user.email }}
+                            <a class="nav-link nav-min dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                                <i class="bi bi-person-circle me-1"></i>{{ user.nome_completo|default:user.email|truncatewords:2 }}
                             </a>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="{% url 'users:perfil' %}"><i class="bi bi-person-gear me-2"></i>Meu Perfil</a></li>
-                                <li><a class="dropdown-item" href="{% url 'core:dashboard' %}"><i class="bi bi-speedometer2 me-2"></i>Meu Painel</a></li>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" style="border-radius:12px;">
+                                <li><a class="dropdown-item small" href="{% url 'users:perfil' %}"><i class="bi bi-person me-2"></i>Meu perfil</a></li>
+                                <li><a class="dropdown-item small" href="{% url 'core:dashboard' %}"><i class="bi bi-grid me-2"></i>Meu painel</a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item text-danger" href="{% url 'core:logout' %}"><i class="bi bi-box-arrow-right me-2"></i>Sair</a></li>
+                                <li><a class="dropdown-item small text-danger" href="{% url 'core:logout' %}"><i class="bi bi-box-arrow-right me-2"></i>Sair</a></li>
                             </ul>
                         </li>
                     {% else %}
-                        <li class="nav-item"><a class="nav-link" href="{% url 'core:login' %}"><i class="bi bi-box-arrow-in-right me-1"></i>Entrar</a></li>
-                        <li class="nav-item ms-lg-2 mt-2 mt-lg-0"><a class="btn btn-warning text-dark" href="{% url 'core:register' %}"><i class="bi bi-person-plus me-1"></i>Cadastrar</a></li>
+                        <li class="nav-item"><a class="nav-link nav-min" href="{% url 'core:login' %}">Entrar</a></li>
+                        <li class="nav-item"><a class="btn btn-accent btn-sm px-3" href="{% url 'core:register' %}">Criar conta</a></li>
                     {% endif %}
                 </ul>
             </div>
@@ -80,13 +193,10 @@
         {% if messages %}
             <div class="container pt-3">
                 {% for message in messages %}
-                    <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show shadow-sm border-0 rounded-3 d-flex align-items-center" role="alert">
-                        {% if message.level_tag == 'success' %}<i class="bi bi-check-circle-fill text-success me-2 fs-5"></i>
-                        {% elif message.level_tag == 'error' %}<i class="bi bi-exclamation-triangle-fill text-danger me-2 fs-5"></i>
-                        {% elif message.level_tag == 'warning' %}<i class="bi bi-exclamation-diamond-fill text-warning me-2 fs-5"></i>
-                        {% else %}<i class="bi bi-info-circle-fill text-info me-2 fs-5"></i>{% endif %}
+                    <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show d-flex align-items-center" role="alert">
+                        <i class="bi {% if message.level_tag == 'success' %}bi-check-circle{% elif message.level_tag == 'error' %}bi-exclamation-circle{% elif message.level_tag == 'warning' %}bi-exclamation-triangle{% else %}bi-info-circle{% endif %} me-2"></i>
                         <div>{{ message }}</div>
-                        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"> </button>
+                        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
                     </div>
                 {% endfor %}
             </div>
@@ -94,33 +204,17 @@
         {% block content %}{% endblock %}
     </main>
 
-    <footer class="footer mt-auto">
-        <div class="container">
-            <div class="row g-4">
-                <div class="col-md-4">
-                    <h5 class="text-white mb-3"><i class="bi bi-lightning-charge-fill me-2"></i>Opurtunet</h5>
-                    <p class="small">Plataforma de vagas de emprego e imóveis para aluguel, conectando pessoas a oportunidades.</p>
-                </div>
-                <div class="col-md-4">
-                    <h6 class="text-white mb-3">Links Úteis</h6>
-                    <ul class="list-unstyled small">
-                        <li><a href="{% url 'core:home' %}" class="text-decoration-none text-light">Início</a></li>
-                        <li><a href="{% url 'jobs:list' %}" class="text-decoration-none text-light">Vagas de Emprego</a></li>
-                        <li><a href="{% url 'properties:list' %}" class="text-decoration-none text-light">Imóveis para Aluguel</a></li>
-                        <li><a href="#" class="text-decoration-none text-light">Sobre o Projeto</a></li>
-                    </ul>
-                </div>
-                <div class="col-md-4">
-                    <h6 class="text-white mb-3">Contato</h6>
-                    <ul class="list-unstyled small">
-                        <li><i class="bi bi-geo-alt me-2"></i>Paulistana - PI</li>
-                        <li><i class="bi bi-envelope me-2"></i>contato@opurtunet.com</li>
-                        <li><i class="bi bi-telephone me-2"></i>(89) 0000-0000</li>
-                    </ul>
-                </div>
+    <footer class="site-footer">
+        <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+            <div>
+                <span class="brand text-dark">Oportunet<span class="brand-dot">.</span></span>
+                <span class="ms-2">Vagas e imóveis para a comunidade de Paulistana - PI.</span>
             </div>
-            <hr class="border-secondary my-3">
-            <p class="text-center small mb-0">&copy; 2026 Opurtunet - Todos os direitos reservados.</p>
+            <div class="d-flex gap-4">
+                <a href="{% url 'jobs:list' %}" class="text-muted">Vagas</a>
+                <a href="{% url 'properties:list' %}" class="text-muted">Imóveis</a>
+            </div>
+            <small>&copy; {% now "Y" %} Oportunet</small>
         </div>
     </footer>
 

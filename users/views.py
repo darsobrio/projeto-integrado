@@ -1,15 +1,13 @@
-from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 
-
-def register(request):
-    return render(request, 'register.html')
-
-
-def login_view(request):
-    return render(request, 'login.html')
+from core.views import dashboard
 
 
 @login_required
 def perfil(request):
-    return render(request, 'dashboard.html')
+    """Exibe o painel/perfil do usuário logado.
+
+    O cadastro e o login são centralizados em ``core`` (que também
+    sincroniza o Firestore), então aqui apenas reaproveitamos o painel.
+    """
+    return dashboard(request)

@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% block title %}{% if modo_edicao %}Editar vaga{% else %}Publicar vaga{% endif %} - Oportunet{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container" style="max-width: 880px;">
+        <a href="{% url 'core:dashboard' %}" class="small text-muted d-inline-block mb-4"><i class="bi bi-arrow-left me-1"></i>Voltar ao painel</a>
+
+        <div class="mb-4">
+            <span class="eyebrow">Empresa</span>
+            <h1 class="page-title mt-2 mb-1">{% if modo_edicao %}Editar vaga{% else %}Publicar nova vaga{% endif %}</h1>
+            <p class="text-muted mb-0">Preencha as informações abaixo. Os campos com * são obrigatórios.</p>
+        </div>
+
+        <form method="POST" class="card-flat p-4 p-md-5">
+            {% csrf_token %}
+
+            <h2 class="h6 fw-semibold mb-3">Informações da vaga</h2>
+            <div class="row g-3 mb-4">
+                <div class="col-md-8">
+                    <label class="form-label">Função / cargo *</label>
+                    <input type="text" name="funcao" class="form-control" value="{{ vaga.funcao|default:'' }}" placeholder="Ex: Desenvolvedor Web Júnior" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Quantidade de vagas</label>
+                    <input type="number" name="qtd_vagas" class="form-control" value="{{ vaga.qtd_vagas|default:1 }}" min="1">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Tipo de contrato</label>
+                    <select name="tipo_contrato" class="form-select">
+                        {% for valor, rotulo in tipo_contrato_choices %}
+                            <option value="{{ valor }}" {% if vaga.tipo_contrato == valor %}selected{% endif %}>{{ rotulo }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Modalidade</label>
+                    <select name="modalidade" class="form-select">
+                        {% for valor, rotulo in modalidade_choices %}
+                            <option value="{{ valor }}" {% if vaga.modalidade == valor %}selected{% endif %}>{{ rotulo }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Salário (R$)</label>
+                    <input type="text" name="salario" class="form-control" value="{% if vaga.salario %}{{ vaga.salario|floatformat:'-2' }}{% endif %}" placeholder="Ex: 2500,00">
+                    <div class="input-hint mt-1">Deixe em branco para "a combinar".</div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Prazo para candidaturas</label>
+                    <input type="date" name="prazo" class="form-control" value="{{ vaga.prazo|default:'' }}">
+                </div>
+            </div>
+
+            <h2 class="h6 fw-semibold mb-3">Descrição</h2>
+            <div class="row g-3 mb-4">
+                <div class="col-12">
+                    <label class="form-label">Descrição da vaga *</label>
+                    <textarea name="descricao" rows="4" class="form-control" placeholder="Responsabilidades, atividades e detalhes do dia a dia." required>{{ vaga.descricao|default:'' }}</textarea>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Requisitos *</label>
+                    <textarea name="requisitos" rows="4" class="form-control" placeholder="Experiência, formação e habilidades necessárias." required>{{ vaga.requisitos|default:'' }}</textarea>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Benefícios</label>
+                    <textarea name="beneficios" rows="3" class="form-control" placeholder="Vale-refeição, plano de saúde...">{{ vaga.beneficios|default:'' }}</textarea>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Horário de trabalho</label>
+                    <textarea name="horario" rows="3" class="form-control" placeholder="Ex: Segunda a sexta, 8h às 18h">{{ vaga.horario|default:'' }}</textarea>
+                </div>
+            </div>
+
+            <h2 class="h6 fw-semibold mb-3">Empresa e local</h2>
+            <div class="row g-3 mb-4">
+                <div class="col-md-8">
+                    <label class="form-label">Nome da empresa</label>
+                    <input type="text" name="nome_empresa" class="form-control" value="{{ vaga.nome_empresa|default:user.nome_completo|default:'' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">CNPJ</label>
+                    <input type="text" name="cnpj" class="form-control" value="{{ vaga.cnpj|default:'' }}" placeholder="00.000.000/0001-00">
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Endereço / local de trabalho</label>
+                    <input type="text" name="endereco" class="form-control" value="{{ vaga.endereco|default:'' }}" placeholder="Ex: Centro, Paulistana - PI">
+                </div>
+            </div>
+
+            <div class="divider pt-4 d-flex flex-column flex-sm-row justify-content-sm-end gap-2">
+                <a href="{% url 'core:dashboard' %}" class="btn btn-ghost px-4 py-2">Cancelar</a>
+                <button type="submit" class="btn btn-accent px-4 py-2"><i class="bi bi-check2 me-2"></i>{% if modo_edicao %}Salvar alterações{% else %}Publicar vaga{% endif %}</button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

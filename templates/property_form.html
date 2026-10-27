@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% block title %}{% if modo_edicao %}Editar imóvel{% else %}Anunciar imóvel{% endif %} - Oportunet{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container" style="max-width: 880px;">
+        <a href="{% url 'core:dashboard' %}" class="small text-muted d-inline-block mb-4"><i class="bi bi-arrow-left me-1"></i>Voltar ao painel</a>
+
+        <div class="mb-4">
+            <span class="eyebrow">Proprietário</span>
+            <h1 class="page-title mt-2 mb-1">{% if modo_edicao %}Editar imóvel{% else %}Anunciar imóvel{% endif %}</h1>
+            <p class="text-muted mb-0">Preencha as informações abaixo. Os campos com * são obrigatórios.</p>
+        </div>
+
+        <form method="POST" class="card-flat p-4 p-md-5">
+            {% csrf_token %}
+
+            <h2 class="h6 fw-semibold mb-3">Localização</h2>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">Endereço *</label>
+                    <input type="text" name="endereco" class="form-control" value="{{ imovel.endereco|default:'' }}" placeholder="Ex: Rua das Acácias, 123" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Bairro</label>
+                    <input type="text" name="bairro" class="form-control" value="{{ imovel.bairro|default:'' }}" placeholder="Centro">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Cidade *</label>
+                    <input type="text" name="cidade" class="form-control" value="{{ imovel.cidade|default:'Paulistana - PI' }}" required>
+                </div>
+            </div>
+
+            <h2 class="h6 fw-semibold mb-3">Valores e características</h2>
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <label class="form-label">Valor do aluguel (R$) *</label>
+                    <input type="text" name="valor_aluguel" class="form-control" value="{% if imovel.valor_aluguel %}{{ imovel.valor_aluguel|floatformat:'-2' }}{% endif %}" placeholder="Ex: 950,00" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Condomínio (R$)</label>
+                    <input type="text" name="valor_condominio" class="form-control" value="{% if imovel.valor_condominio %}{{ imovel.valor_condominio|floatformat:'-2' }}{% endif %}" placeholder="Opcional">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Área (m²)</label>
+                    <input type="text" name="area_m2" class="form-control" value="{% if imovel.area_m2 %}{{ imovel.area_m2|floatformat:'-2' }}{% endif %}" placeholder="Opcional">
+                </div>
+                <div class="col-4 col-md-3">
+                    <label class="form-label">Quartos</label>
+                    <input type="number" name="quartos" class="form-control" value="{{ imovel.quartos|default:1 }}" min="0">
+                </div>
+                <div class="col-4 col-md-3">
+                    <label class="form-label">Banheiros</label>
+                    <input type="number" name="banheiros" class="form-control" value="{{ imovel.banheiros|default:1 }}" min="0">
+                </div>
+                <div class="col-4 col-md-3">
+                    <label class="form-label">Vagas de garagem</label>
+                    <input type="number" name="garagem" class="form-control" value="{{ imovel.garagem|default:0 }}" min="0">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Disponível a partir de</label>
+                    <input type="date" name="disponibilidade" class="form-control" value="{{ imovel.disponibilidade|default:'' }}">
+                </div>
+                <div class="col-md-6">
+                    <div class="form-check mt-md-4 pt-md-1">
+                        <input class="form-check-input" type="checkbox" name="mobiliado" id="mobiliado" {% if imovel.mobiliado %}checked{% endif %}>
+                        <label class="form-check-label" for="mobiliado">Mobiliado</label>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-check mt-md-4 pt-md-1">
+                        <input class="form-check-input" type="checkbox" name="aceita_animais" id="aceitaAnimais" {% if imovel.aceita_animais %}checked{% endif %}>
+                        <label class="form-check-label" for="aceitaAnimais">Aceita animais</label>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="h6 fw-semibold mb-3">Detalhes</h2>
+            <div class="row g-3 mb-4">
+                <div class="col-12">
+                    <label class="form-label">Descrição</label>
+                    <textarea name="descricao" rows="4" class="form-control" placeholder="Fale sobre o imóvel, localização, vizinhança...">{{ imovel.descricao|default:'' }}</textarea>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Características</label>
+                    <textarea name="caracteristicas" rows="3" class="form-control" placeholder="Ex: área de serviço, varanda, piscina">{{ imovel.caracteristicas|default:'' }}</textarea>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Regras</label>
+                    <textarea name="regras" rows="3" class="form-control" placeholder="Ex: sem fumantes, fiador necessário">{{ imovel.regras|default:'' }}</textarea>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Contato (telefone)</label>
+                    <input type="text" name="contato_proprietario" class="form-control" value="{{ imovel.contato_proprietario|default:user.telefone|default:'' }}" placeholder="(89) 90000-0000">
+                </div>
+            </div>
+
+            <div class="divider pt-4 d-flex flex-column flex-sm-row justify-content-sm-end gap-2">
+                <a href="{% url 'core:dashboard' %}" class="btn btn-ghost px-4 py-2">Cancelar</a>
+                <button type="submit" class="btn btn-accent px-4 py-2"><i class="bi bi-check2 me-2"></i>{% if modo_edicao %}Salvar alterações{% else %}Anunciar imóvel{% endif %}</button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

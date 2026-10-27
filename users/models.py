@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
-
 class CustomUser(AbstractUser):
     CANDIDATO = 'candidato'
     EMPRESA = 'empresa'
@@ -25,6 +24,7 @@ class CustomUser(AbstractUser):
     cpf = models.CharField(max_length=14, unique=True, blank=True, null=True)
     data_nascimento = models.DateField(blank=True, null=True)
     email = models.EmailField(unique=True)
+    firebase_uid = models.CharField(max_length=128, unique=True, null=True, blank=True)
     telefone = models.CharField(max_length=20, blank=True, null=True)
     foto_perfil = models.ImageField(upload_to='perfis/fotos/', blank=True, null=True)
     endereco = models.CharField(max_length=255, blank=True, null=True)

@@ -1,0 +1,29 @@
+# Arquivos sensíveis (credenciais)
+.env
+serviceAccountKey.json
+*.pem
+
+# Banco de dados local
+db.sqlite3
+db.sqlite3.backup
+*.sqlite3
+
+# Ambiente virtual
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Mídia e arquivos enviados por usuários
+media/
+
+# Editores e sistema operacional
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

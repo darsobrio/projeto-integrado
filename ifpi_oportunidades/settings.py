@@ -11,6 +11,10 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-chave-padrao-dev')
 
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
+FIREBASE_API_KEY = os.getenv("FIREBASE_API_KEY", "")
+
+FIREBASE_PROJECT_ID = os.getenv("FIREBASE_PROJECT_ID", "")
+
 ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
@@ -87,17 +91,14 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 LANGUAGE_CODE = 'pt-br'
-TIME_ZONE = 'America/Sao_Paulo'
+TIME_ZONE = 'America/Fortaleza'
 USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-try:
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-except Exception:
-    pass
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'

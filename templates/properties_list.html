@@ -1,206 +1,112 @@
 {% extends 'base.html' %}
-{% block title %}Imóveis para Aluguel - Opurtunet{% endblock %}
+{% block title %}Imóveis para Aluguel - Oportunet{% endblock %}
+
 {% block content %}
-<section class="py-4 bg-light border-bottom">
+<section class="section pb-0">
     <div class="container">
-        <div class="d-flex flex-wrap gap-3 justify-content-between align-items-center">
+        <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
             <div>
-                <h2 class="fw-bold text-primary mb-0"><i class="bi bi-house-heart me-2"></i>Imóveis para Aluguel</h2>
-                <p class="text-muted mb-0">{{ imoveis|length|default:"17" }} imóveis encontrados</p>
+                <span class="eyebrow">Moradia</span>
+                <h1 class="page-title mt-2 mb-1">Imóveis para alugar</h1>
+                <p class="text-muted mb-0">{{ imoveis|length }} imóve{{ imoveis|length|pluralize:"l,is" }} encontrado{{ imoveis|length|pluralize }}</p>
             </div>
-            <button class="btn btn-outline-primary d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#filtrosImoveis">
-                <i class="bi bi-filter me-1"></i>Filtros
-            </button>
+            {% if user.is_authenticated and user.tipo_usuario == 'proprietario' %}
+                <a href="{% url 'properties:create' %}" class="btn btn-accent"><i class="bi bi-plus-lg me-1"></i>Anunciar imóvel</a>
+            {% endif %}
         </div>
-    </div>
-</section>
 
-<section class="py-4">
-    <div class="container">
-        <div class="row g-4">
-            <aside class="col-lg-3">
-                <div class="offcanvas-lg offcanvas-start shadow" tabindex="-1" id="filtrosImoveis" aria-labelledby="filtrosImoveisLabel">
-                    <div class="offcanvas-header border-bottom d-lg-none">
-                        <h5 class="offcanvas-title" id="filtrosImoveisLabel"><i class="bi bi-filter-circle me-2"></i>Filtros de Imóveis</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#filtrosImoveis"></button>
-                    </div>
-                    <div class="offcanvas-body p-3 p-lg-0">
-                        <div class="filter-sidebar">
-                            <div class="mb-4">
-                                <label class="form-label fw-bold mb-2 d-block"><i class="bi bi-geo-alt me-1"></i>Cidade / Bairro</label>
-                                <input type="text" class="form-control mb-2" placeholder="Busque por localização">
-                                <select class="form-select">
-                                    <option>Todas as cidades</option>
-                                    <option>Paulistana - PI</option>
-                                    <option>Teresina - PI</option>
-                                    <option>Oeiras - PI</option>
-                                </select>
-                            </div>
-                            <div class="mb-4">
-                                <label class="form-label fw-bold mb-2 d-block"><i class="bi bi-cash-stack me-1"></i>Faixa de Aluguel</label>
-                                <div class="row g-2">
-                                    <div class="col-6">
-                                        <label class="form-label small text-muted mb-1 d-block">Mínimo R$</label>
-                                        <input type="number" class="form-control" placeholder="0">
-                                    </div>
-                                    <div class="col-6">
-                                        <label class="form-label small text-muted mb-1 d-block">Máximo R$</label>
-                                        <input type="number" class="form-control" placeholder="3.000">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="mb-4">
-                                <label class="form-label fw-bold mb-2 d-block"><i class="bi bi-door-open me-1"></i>Quantidade de Quartos</label>
-                                <div class="d-flex flex-wrap gap-2">
-                                    <label class="btn btn-outline-secondary mb-0"><input type="checkbox" class="btn-check" autocomplete="off"> 1+</label>
-                                    <label class="btn btn-outline-secondary mb-0"><input type="checkbox" class="btn-check" autocomplete="off"> 2+</label>
-                                    <label class="btn btn-outline-secondary mb-0"><input type="checkbox" class="btn-check" autocomplete="off"> 3+</label>
-                                    <label class="btn btn-outline-secondary mb-0"><input type="checkbox" class="btn-check" autocomplete="off"> 4+</label>
-                                </div>
-                            </div>
-                            <div class="mb-4">
-                                <label class="form-label fw-bold mb-2 d-block"><i class="bi bi-sliders me-1"></i>Características</label>
-                                <div class="form-check form-switch mb-2">
-                                    <input class="form-check-input" type="checkbox" id="mobiliado">
-                                    <label class="form-check-label" for="mobiliado">Mobiliado</label>
-                                </div>
-                                <div class="form-check form-switch mb-2">
-                                    <input class="form-check-input" type="checkbox" id="animais">
-                                    <label class="form-check-label" for="animais">Aceita Animais (Pet Friendly)</label>
-                                </div>
-                                <div class="form-check form-switch mb-2">
-                                    <input class="form-check-input" type="checkbox" id="garagem">
-                                    <label class="form-check-label" for="garagem">Com Garagem</label>
-                                </div>
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="suite">
-                                    <label class="form-check-label" for="suite">Com Suíte</label>
-                                </div>
-                            </div>
-                            <div class="d-grid gap-2">
-                                <button class="btn btn-primary" type="button"><i class="bi bi-funnel me-1"></i>Aplicar Filtros</button>
-                                <button class="btn btn-outline-secondary" type="button"><i class="bi bi-x-circle me-1"></i>Limpar Filtros</button>
-                            </div>
-                        </div>
-                    </div>
+        <form method="GET" class="card-flat p-3 p-md-4 mb-4">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-6">
+                    <label class="form-label">Palavra-chave</label>
+                    <input type="text" name="q" value="{{ filtro_q }}" class="form-control" placeholder="Descrição, característica...">
                 </div>
-            </aside>
-
-            <div class="col-lg-9">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <div class="d-flex gap-2 align-items-center">
-                        <div class="btn-group" role="group">
-                            <button class="btn btn-outline-secondary active"><i class="bi bi-grid-3x3-gap"></i> Grade</button>
-                            <button class="btn btn-outline-secondary"><i class="bi bi-list-ul"></i> Lista</button>
-                        </div>
-                    </div>
-                    <select class="form-select w-auto">
-                        <option>Mais recentes</option>
-                        <option>Menor preço</option>
-                        <option>Maior preço</option>
-                        <option>Mais quartos</option>
+                <div class="col-md-6">
+                    <label class="form-label">Cidade ou bairro</label>
+                    <input type="text" name="local" value="{{ filtro_local }}" class="form-control" placeholder="Onde você quer morar?">
+                </div>
+                <div class="col-6 col-lg-3">
+                    <label class="form-label">Preço mín. (R$)</label>
+                    <input type="text" name="preco_min" value="{{ filtro_preco_min }}" class="form-control" placeholder="0">
+                </div>
+                <div class="col-6 col-lg-3">
+                    <label class="form-label">Preço máx. (R$)</label>
+                    <input type="text" name="preco_max" value="{{ filtro_preco_max }}" class="form-control" placeholder="2000">
+                </div>
+                <div class="col-6 col-lg-2">
+                    <label class="form-label">Quartos (mín.)</label>
+                    <select name="quartos" class="form-select">
+                        <option value="">Qualquer</option>
+                        <option value="1" {% if filtro_quartos == '1' %}selected{% endif %}>1+</option>
+                        <option value="2" {% if filtro_quartos == '2' %}selected{% endif %}>2+</option>
+                        <option value="3" {% if filtro_quartos == '3' %}selected{% endif %}>3+</option>
+                        <option value="4" {% if filtro_quartos == '4' %}selected{% endif %}>4+</option>
                     </select>
                 </div>
-
-                <div class="row g-4">
-                    {% for imovel in imoveis %}
-                    <div class="col-md-6 col-xl-4 d-flex">
-                        <div class="card card-hover border-0 shadow-sm h-100 w-100">
-                            <div class="position-relative overflow-hidden rounded-top">
-                                <div class="bg-secondary bg-gradient text-white d-flex align-items-center justify-content-center" style="height: 220px;">
-                                    {% if imovel.quartos >= 4 %}<i class="bi bi-houses display-2 opacity-75"></i>
-                                    {% elif imovel.quartos == 3 %}<i class="bi bi-house display-2 opacity-75"></i>
-                                    {% elif imovel.quartos == 1 %}<i class="bi bi-door-open display-2 opacity-75"></i>
-                                    {% else %}<i class="bi bi-building display-2 opacity-75"></i>{% endif %}
-                                </div>
-                                <span class="badge bg-warning text-dark position-absolute top-2 start-2"><i class="bi bi-tag me-1"></i>Aluga</span>
-                                <button class="btn btn-outline-danger position-absolute top-2 end-2 rounded-circle bg-white" type="button"><i class="bi bi-heart"></i></button>
-                            </div>
-                            <div class="card-body d-flex flex-column">
-                                <h5 class="text-primary fw-bold mb-1 min-h-2lh">{{ imovel.endereco|truncatewords:6 }}</h5>
-                                <p class="text-muted small mb-2">
-                                    <i class="bi bi-geo-alt me-1"></i>{% if imovel.bairro %}{{ imovel.bairro }}, {% endif %}{{ imovel.cidade }}
-                                </p>
-                                <h4 class="text-success fw-bold mb-3">
-                                    R$ {{ imovel.valor_aluguel }}<small class="text-muted fw-normal fs-6">/mês</small>
-                                    {% if imovel.valor_condominio %}<small class="text-muted d-block mt-1">+ R$ {{ imovel.valor_condominio }} condomínio</small>{% endif %}
-                                </h4>
-                                <div class="d-flex flex-wrap gap-3 small text-muted border-top pt-3 mb-3 justify-content-between">
-                                    <span><i class="bi bi-door-open me-1"></i>{{ imovel.quartos }} quarto{{ imovel.quartos|pluralize }}</span>
-                                    <span><i class="bi bi-bath me-1"></i>{{ imovel.banheiros }} banh.</span>
-                                    <span><i class="bi bi-car-front me-1"></i>{{ imovel.garagem }} vaga{{ imovel.garagem|pluralize }}</span>
-                                    {% if imovel.area_m2 %}<span><i class="bi bi-rulers me-1"></i>{{ imovel.area_m2 }} m²</span>{% endif %}
-                                </div>
-                                <div class="d-flex flex-wrap gap-2 mt-auto mb-3">
-                                    {% if imovel.mobiliado %}<span class="badge bg-info text-dark"><i class="bi bi-sofa me-1"></i>Mobiliado</span>{% endif %}
-                                    {% if imovel.aceita_animais %}<span class="badge bg-success"><i class="bi bi-heart-paw me-1"></i>Pet Friendly</span>{% endif %}
-                                </div>
-                            </div>
-                            <div class="card-footer bg-white border-top pt-3 pb-3">
-                                <div class="d-grid">
-                                    <a href="#" class="btn btn-outline-primary"><i class="bi bi-eye me-1"></i>Ver Detalhes</a>
-                                </div>
-                            </div>
-                        </div>
+                <div class="col-md-6 col-lg-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="aceita_animais" id="fAceitaAnimais" {% if filtro_aceita_animais %}checked{% endif %}>
+                        <label class="form-check-label" for="fAceitaAnimais">Aceita animais</label>
                     </div>
-                    {% empty %}
-                    {% for i in "123456"|make_list %}
-                    <div class="col-md-6 col-xl-4 d-flex">
-                        <div class="card card-hover border-0 shadow-sm h-100 w-100">
-                            <div class="position-relative overflow-hidden rounded-top">
-                                <div class="bg-secondary bg-gradient text-white d-flex align-items-center justify-content-center" style="height: 220px;">
-                                    {% if i == "1" %}<i class="bi bi-building display-2 opacity-75"></i>
-                                    {% elif i == "2" %}<i class="bi bi-house display-2 opacity-75"></i>
-                                    {% elif i == "3" %}<i class="bi bi-door-open display-2 opacity-75"></i>
-                                    {% elif i == "4" %}<i class="bi bi-house-heart display-2 opacity-75"></i>
-                                    {% elif i == "5" %}<i class="bi bi-house-door display-2 opacity-75"></i>
-                                    {% else %}<i class="bi bi-houses display-2 opacity-75"></i>{% endif %}
-                                </div>
-                                <span class="badge bg-warning text-dark position-absolute top-2 start-2"><i class="bi bi-tag me-1"></i>Aluga</span>
-                                <button class="btn btn-outline-danger position-absolute top-2 end-2 rounded-circle bg-white" type="button"><i class="bi bi-heart"></i></button>
-                            </div>
-                            <div class="card-body d-flex flex-column">
-                                <h5 class="text-primary fw-bold mb-1 min-h-2lh">
-                                    {% if i == "1" %}Apartamento 2q Mobiliado Centro{% elif i == "2" %}Casa Térrea 3q com Quintal{% elif i == "3" %}Kitnet Localização Central{% elif i == "4" %}Sobrado 4q em Bairro Nobre{% elif i == "5" %}Flat Mobiliado Bairro Centro{% else %}Casa Completa com Garagem 2 vagas{% endif %}
-                                </h5>
-                                <p class="text-muted small mb-2">
-                                    <i class="bi bi-geo-alt me-1"></i>{% if i == "1" %}Centro, Paulistana - PI{% elif i == "2" %}Boa Vista, Paulistana - PI{% elif i == "3" %}Centro, Paulistana - PI{% elif i == "4" %}Jardins, Paulistana - PI{% elif i == "5" %}Centro, Paulistana - PI{% else %}São José, Paulistana - PI{% endif %}
-                                </p>
-                                <h4 class="text-success fw-bold mb-3">
-                                    R$ {% if i == "1" %}950{% elif i == "2" %}1.450{% elif i == "3" %}650{% elif i == "4" %}2.200{% elif i == "5" %}1.100{% else %}1.650{% endif %},00<small class="text-muted fw-normal fs-6">/mês</small>
-                                </h4>
-                                <div class="d-flex flex-wrap gap-3 small text-muted border-top pt-3 mb-3 justify-content-between">
-                                    <span><i class="bi bi-door-open me-1"></i>{% if i == "3" %}1{% else %}{{ i|add:1 }}{% endif %} quarto{% if i == "3" %}{% else %}s{% endif %}</span>
-                                    <span><i class="bi bi-bath me-1"></i>{% if i == "4" %}3{% else %}{{ i }}{% endif %} banh.</span>
-                                    <span><i class="bi bi-car-front me-1"></i>{% if i == "2" %}2{% else %}1{% endif %} vaga{% if i == "2" %}s{% endif %}</span>
-                                </div>
-                                <div class="d-flex flex-wrap gap-2 mt-auto mb-3">
-                                    {% if i == "1" or i == "3" or i == "5" %}<span class="badge bg-info text-dark"><i class="bi bi-sofa me-1"></i>Mobiliado</span>{% endif %}
-                                    {% if i == "2" or i == "4" or i == "6" %}<span class="badge bg-success"><i class="bi bi-heart-paw me-1"></i>Pet Friendly</span>{% endif %}
-                                    {% if i == "3" %}<span class="badge bg-primary"><i class="bi bi-geo-alt me-1"></i>Localização Central</span>{% endif %}
-                                </div>
-                            </div>
-                            <div class="card-footer bg-white border-top pt-3 pb-3">
-                                <div class="d-grid">
-                                    <a href="#" class="btn btn-outline-primary"><i class="bi bi-eye me-1"></i>Ver Detalhes</a>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="mobiliado" id="fMobiliado" {% if filtro_mobiliado %}checked{% endif %}>
+                        <label class="form-check-label" for="fMobiliado">Mobiliado</label>
                     </div>
-                    {% endfor %}
-                    {% endfor %}
                 </div>
-
-                <nav class="mt-4" aria-label="Paginação">
-                    <ul class="pagination justify-content-center">
-                        <li class="page-item disabled"><a class="page-link" href="#"><i class="bi bi-chevron-left"></i></a></li>
-                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                        <li class="page-item"><a class="page-link" href="#">2</a></li>
-                        <li class="page-item"><a class="page-link" href="#">3</a></li>
-                        <li class="page-item"><a class="page-link" href="#"><i class="bi bi-chevron-right"></i></a></li>
-                    </ul>
-                </nav>
+                <div class="col-lg-2 d-grid">
+                    <button class="btn btn-accent py-2" type="submit"><i class="bi bi-search me-1"></i>Buscar</button>
+                </div>
             </div>
+            {% if filtro_q or filtro_local or filtro_preco_min or filtro_preco_max or filtro_quartos or filtro_aceita_animais or filtro_mobiliado %}
+                <a href="{% url 'properties:list' %}" class="small text-muted d-inline-block mt-3"><i class="bi bi-x-circle me-1"></i>Limpar filtros</a>
+            {% endif %}
+        </form>
+
+        <div class="row g-4">
+            {% for imovel in imoveis %}
+            <div class="col-md-6 col-xl-4">
+                <div class="card-min d-flex flex-column h-100 p-4">
+                    <h2 class="h6 fw-semibold mb-1">{{ imovel.endereco }}</h2>
+                    <p class="text-muted small mb-3"><i class="bi bi-geo-alt me-1"></i>{% if imovel.bairro %}{{ imovel.bairro }}, {% endif %}{{ imovel.cidade }}</p>
+
+                    <div class="fs-4 fw-bold mb-1">R$ {{ imovel.valor_aluguel_display }}<span class="text-muted fw-normal fs-6">/mês</span></div>
+                    {% if imovel.valor_condominio_display %}<small class="text-muted d-block mb-3">+ R$ {{ imovel.valor_condominio_display }} de condomínio</small>{% endif %}
+
+                    <div class="d-flex flex-wrap gap-3 text-muted small border-top pt-3 mt-2 mb-3">
+                        <span><i class="bi bi-door-open me-1"></i>{{ imovel.quartos }} quarto{{ imovel.quartos|pluralize }}</span>
+                        <span><i class="bi bi-droplet me-1"></i>{{ imovel.banheiros }} banh.</span>
+                        <span><i class="bi bi-car-front me-1"></i>{{ imovel.garagem }} vaga{{ imovel.garagem|pluralize }}</span>
+                        {% if imovel.area_m2 %}<span><i class="bi bi-ruler-combined me-1"></i>{{ imovel.area_m2 }} m²</span>{% endif %}
+                    </div>
+
+                    {% if imovel.descricao %}
+                        <p class="text-muted small flex-grow-1">{{ imovel.descricao|truncatewords:18 }}</p>
+                    {% else %}<div class="flex-grow-1"></div>{% endif %}
+
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        {% if imovel.mobiliado %}<span class="chip chip-muted">Mobiliado</span>{% endif %}
+                        {% if imovel.aceita_animais %}<span class="chip chip-muted">Aceita animais</span>{% endif %}
+                    </div>
+
+                    <div class="d-flex flex-column gap-2 mt-auto">
+                        <a href="{% url 'properties:detail' imovel.pk %}" class="btn btn-accent w-100">Ver detalhes</a>
+                        {% if imovel.contato_proprietario %}
+                            <a href="tel:{{ imovel.contato_proprietario }}" class="btn btn-ghost w-100">
+                                <i class="bi bi-telephone me-1"></i>{{ imovel.contato_proprietario }}
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="empty-state">
+                    <i class="bi bi-house d-block mb-2"></i>
+                    <p class="mb-1 fw-medium">Nenhum imóvel encontrado</p>
+                    <p class="text-muted small mb-0">Ajuste os filtros ou volte mais tarde.</p>
+                </div>
+            </div>
+            {% endfor %}
         </div>
     </div>
 </section>

@@ -1,166 +1,96 @@
 {% extends 'base.html' %}
-{% block title %}Início - Opurtunet{% endblock %}
+{% block title %}Início - Oportunet{% endblock %}
 
 {% block content %}
-<section class="hero-section">
+<section class="section pb-0">
     <div class="container">
         <div class="row align-items-center g-5">
             <div class="col-lg-6">
-                <h1 class="display-5 fw-bold mb-3">Sua próxima oportunidade começa aqui</h1>
-                <p class="lead mb-4">Encontre vagas de emprego, estágios e os melhores imóveis para alugar perto de você.</p>
-                <div class="d-flex flex-wrap gap-2">
-                    <a href="#buscar" class="btn btn-warning btn-lg text-dark"><i class="bi bi-search me-2"></i>Buscar Agora</a>
-                    <a href="{% url 'core:register' %}" class="btn btn-outline-light btn-lg"><i class="bi bi-person-plus me-2"></i>Cadastrar-se</a>
+                <span class="eyebrow">Oportunidades perto de você</span>
+                <h1 class="display-5 fw-bold mt-3 mb-3" style="letter-spacing:-0.035em;">
+                    Encontre sua próxima vaga ou o imóvel ideal.
+                </h1>
+                <p class="lead-min mb-4" style="max-width: 32rem;">
+                    Uma plataforma simples para conectar a comunidade de Paulistana a empregos,
+                    estágios e moradias acessíveis.
+                </p>
+                <div class="d-flex flex-wrap gap-2 mb-5">
+                    <a href="{% url 'jobs:list' %}" class="btn btn-accent px-4 py-2">Ver vagas</a>
+                    <a href="{% url 'properties:list' %}" class="btn btn-ghost px-4 py-2">Ver imóveis</a>
                 </div>
-                <div class="row mt-5 g-3 text-center">
-                    <div class="col-4">
-                        <div class="display-5 fw-bold">+200</div>
-                        <small class="opacity-75">Vagas Publicadas</small>
+                <div class="d-flex gap-5">
+                    <div>
+                        <div class="fs-4 fw-bold">{{ total_vagas }}</div>
+                        <div class="text-muted small">Vagas abertas</div>
                     </div>
-                    <div class="col-4">
-                        <div class="display-5 fw-bold">+50</div>
-                        <small class="opacity-75">Imóveis</small>
-                    </div>
-                    <div class="col-4">
-                        <div class="display-5 fw-bold">+1k</div>
-                        <small class="opacity-75">Usuários</small>
+                    <div>
+                        <div class="fs-4 fw-bold">{{ total_imoveis }}</div>
+                        <div class="text-muted small">Imóveis disponíveis</div>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-6" id="buscar">
-                <div class="card border-0 shadow-lg rounded-4">
-                    <div class="card-body p-4">
-                        <h4 class="mb-3 text-dark"><i class="bi bi-search text-primary-ifpi me-2"></i>Busca Rápida</h4>
-                        <form method="GET" action="{% url 'core:busca_rapida' %}" id="formBuscaRapida">
-                            <div class="d-flex mb-3 border-bottom pb-2">
-                                <input type="radio" class="btn-check" name="tipo_busca" id="tipoVaga" value="vaga" checked>
-                                <label class="btn btn-outline-success me-2 flex-grow-1" for="tipoVaga"><i class="bi bi-briefcase me-1"></i>Vagas</label>
-                                <input type="radio" class="btn-check" name="tipo_busca" id="tipoImovel" value="imovel">
-                                <label class="btn btn-outline-primary flex-grow-1" for="tipoImovel"><i class="bi bi-house-heart me-1"></i>Imóveis</label>
-                            </div>
-                            <div class="mb-3">
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
-                                    <input type="text" name="q" class="form-control form-control-lg" placeholder="Cargo, função, ramo...">
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light"><i class="bi bi-geo-alt"></i></span>
-                                    <input type="text" name="local" class="form-control form-control-lg" placeholder="Cidade, bairro ou local">
-                                </div>
-                            </div>
-                            <button class="btn btn-primary-ifpi btn-lg w-100" type="submit"><i class="bi bi-search me-2"></i>Buscar Oportunidades</button>
-                        </form>
-                    </div>
+
+            <div class="col-lg-6">
+                <div class="card-flat p-4 p-md-5">
+                    <h2 class="section-title mb-1">Busca rápida</h2>
+                    <p class="text-muted small mb-4">Encontre em poucos segundos.</p>
+                    <form method="GET" action="{% url 'core:busca_rapida' %}">
+                        <div class="d-flex gap-2 mb-4">
+                            <input type="radio" class="btn-check" name="tipo_busca" id="tipoVaga" value="vaga" checked>
+                            <label class="btn btn-ghost flex-grow-1 btn-sm" for="tipoVaga">Vagas</label>
+                            <input type="radio" class="btn-check" name="tipo_busca" id="tipoImovel" value="imovel">
+                            <label class="btn btn-ghost flex-grow-1 btn-sm" for="tipoImovel">Imóveis</label>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">O que você procura?</label>
+                            <input type="text" name="q" class="form-control" placeholder="Cargo, função ou palavra-chave">
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Onde?</label>
+                            <input type="text" name="local" class="form-control" placeholder="Cidade, bairro ou local">
+                        </div>
+                        <button class="btn btn-accent w-100 py-2" type="submit">
+                            <i class="bi bi-search me-2"></i>Buscar
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<section class="py-5 bg-light">
+<section class="section">
     <div class="container">
         <div class="d-flex justify-content-between align-items-end mb-4">
             <div>
-                <h2 class="fw-bold text-primary-ifpi"><i class="bi bi-briefcase me-2"></i>Vagas em Destaque</h2>
-                <p class="text-muted mb-0">Oportunidades recentes para candidatos da região</p>
+                <span class="eyebrow">Empregos</span>
+                <h2 class="section-title mt-2">Vagas em destaque</h2>
             </div>
-            <a href="{% url 'jobs:list' %}" class="btn btn-outline-success"><i class="bi bi-arrow-right me-1"></i>Ver todas</a>
+            <a href="{% url 'jobs:list' %}" class="text-accent small fw-medium">Ver todas <i class="bi bi-arrow-right"></i></a>
         </div>
         <div class="row g-4">
             {% for vaga in vagas_recentes %}
             <div class="col-md-4">
-                <div class="card card-hover border-0 shadow-sm h-100">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <div>
-                                <h5 class="mb-1 text-primary-ifpi fw-bold">{{ vaga.funcao|default:"Desenvolvedor Web" }}</h5>
-                                <p class="text-muted mb-0 small"><i class="bi bi-building me-1"></i>{{ vaga.nome_empresa|default:"Empresa Exemplo S/A" }}</p>
-                            </div>
-                            <span class="badge bg-success badge-status">{{ vaga.get_status_display|default:"Aberta" }}</span>
-                        </div>
-                        <p class="text-muted small mb-3"><i class="bi bi-geo-alt me-1"></i>Paulistana - PI</p>
-                        <div class="d-flex flex-wrap gap-2 mb-3">
-                            <span class="badge rounded-pill bg-light text-dark border"><i class="bi bi-clock me-1"></i>{{ vaga.get_tipo_contrato_display|default:"CLT" }}</span>
-                            <span class="badge rounded-pill bg-light text-dark border"><i class="bi bi-laptop me-1"></i>{{ vaga.get_modalidade_display|default:"Presencial" }}</span>
-                        </div>
-                        <div class="mb-3">
-                            <h6 class="fw-bold mb-0">R$ {{ vaga.salario|default:"2.500,00" }}</h6>
-                            <small class="text-muted">mensais</small>
-                        </div>
-                        <a href="{% url 'jobs:detail' vaga.pk|default:1 %}" class="btn btn-primary-ifpi w-100"><i class="bi bi-eye me-1"></i>Ver Vaga</a>
+                <a href="{% url 'jobs:detail' vaga.pk %}" class="card-min d-flex flex-column h-100 p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h3 class="h6 fw-semibold mb-0 me-2">{{ vaga.funcao }}</h3>
+                        <span class="chip chip-accent">{{ vaga.tipo_contrato_display }}</span>
                     </div>
-                </div>
+                    <p class="text-muted small mb-1"><i class="bi bi-building me-1"></i>{{ vaga.nome_empresa }}</p>
+                    <p class="text-muted small mb-3"><i class="bi bi-geo-alt me-1"></i>{{ vaga.endereco|default:"Paulistana - PI" }}</p>
+                    <p class="text-muted small flex-grow-1">{{ vaga.descricao|truncatewords:16 }}</p>
+                    <div class="divider pt-3 d-flex justify-content-between align-items-center">
+                        <span class="fw-semibold">{% if vaga.salario_display %}R$ {{ vaga.salario_display }}{% else %}A combinar{% endif %}</span>
+                        <span class="chip chip-muted">{{ vaga.modalidade_display }}</span>
+                    </div>
+                </a>
             </div>
             {% empty %}
-            <div class="col-md-4">
-                <div class="card card-hover border-0 shadow-sm h-100">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <div>
-                                <h5 class="mb-1 text-primary-ifpi fw-bold">Desenvolvedor Web Júnior</h5>
-                                <p class="text-muted mb-0 small"><i class="bi bi-building me-1"></i>Tecnologia do Sertão Ltda</p>
-                            </div>
-                            <span class="badge bg-success badge-status">Aberta</span>
-                        </div>
-                        <p class="text-muted small mb-3"><i class="bi bi-geo-alt me-1"></i>Paulistana - PI</p>
-                        <div class="d-flex flex-wrap gap-2 mb-3">
-                            <span class="badge rounded-pill bg-light text-dark border"><i class="bi bi-clock me-1"></i>CLT</span>
-                            <span class="badge rounded-pill bg-light text-dark border"><i class="bi bi-laptop me-1"></i>Híbrido</span>
-                        </div>
-                        <div class="mb-3">
-                            <h6 class="fw-bold mb-0">R$ 2.500,00</h6>
-                            <small class="text-muted">mensais</small>
-                        </div>
-                        <a href="{% url 'jobs:detail' 1 %}" class="btn btn-primary-ifpi w-100"><i class="bi bi-eye me-1"></i>Ver Vaga</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card card-hover border-0 shadow-sm h-100">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <div>
-                                <h5 class="mb-1 text-primary-ifpi fw-bold">Estágio em Administração</h5>
-                                <p class="text-muted mb-0 small"><i class="bi bi-building me-1"></i>Supermercado Central</p>
-                            </div>
-                            <span class="badge bg-success badge-status">Aberta</span>
-                        </div>
-                        <p class="text-muted small mb-3"><i class="bi bi-geo-alt me-1"></i>Paulistana - PI</p>
-                        <div class="d-flex flex-wrap gap-2 mb-3">
-                            <span class="badge rounded-pill bg-light text-dark border"><i class="bi bi-clock me-1"></i>Estágio</span>
-                            <span class="badge rounded-pill bg-light text-dark border"><i class="bi bi-laptop me-1"></i>Presencial</span>
-                        </div>
-                        <div class="mb-3">
-                            <h6 class="fw-bold mb-0">R$ 800,00</h6>
-                            <small class="text-muted">bolsa + auxílio transporte</small>
-                        </div>
-                        <a href="{% url 'jobs:detail' 2 %}" class="btn btn-primary-ifpi w-100"><i class="bi bi-eye me-1"></i>Ver Vaga</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card card-hover border-0 shadow-sm h-100">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <div>
-                                <h5 class="mb-1 text-primary-ifpi fw-bold">Jovem Aprendiz - Logística</h5>
-                                <p class="text-muted mb-0 small"><i class="bi bi-building me-1"></i>Distribuidora Nordeste</p>
-                            </div>
-                            <span class="badge bg-success badge-status">Aberta</span>
-                        </div>
-                        <p class="text-muted small mb-3"><i class="bi bi-geo-alt me-1"></i>Paulistana - PI</p>
-                        <div class="d-flex flex-wrap gap-2 mb-3">
-                            <span class="badge rounded-pill bg-light text-dark border"><i class="bi bi-clock me-1"></i>Jovem Aprendiz</span>
-                            <span class="badge rounded-pill bg-light text-dark border"><i class="bi bi-laptop me-1"></i>Presencial</span>
-                        </div>
-                        <div class="mb-3">
-                            <h6 class="fw-bold mb-0">R$ 1.212,00</h6>
-                            <small class="text-muted">mensais + benefícios</small>
-                        </div>
-                        <a href="{% url 'jobs:detail' 3 %}" class="btn btn-primary-ifpi w-100"><i class="bi bi-eye me-1"></i>Ver Vaga</a>
-                    </div>
+            <div class="col-12">
+                <div class="empty-state">
+                    <i class="bi bi-briefcase d-block mb-2"></i>
+                    <p class="mb-1 fw-medium">Nenhuma vaga publicada ainda</p>
+                    <p class="text-muted small mb-0">As novas oportunidades aparecerão aqui.</p>
                 </div>
             </div>
             {% endfor %}
@@ -168,110 +98,39 @@
     </div>
 </section>
 
-<section class="py-5">
+<section class="section pt-0">
     <div class="container">
         <div class="d-flex justify-content-between align-items-end mb-4">
             <div>
-                <h2 class="fw-bold text-primary"><i class="bi bi-house-heart me-2"></i>Imóveis Recentes</h2>
-                <p class="text-muted mb-0">Casas e apartamentos para alugar perto de você</p>
+                <span class="eyebrow">Moradia</span>
+                <h2 class="section-title mt-2">Imóveis recentes</h2>
             </div>
-            <a href="{% url 'properties:list' %}" class="btn btn-outline-primary"><i class="bi bi-arrow-right me-1"></i>Ver todos</a>
+            <a href="{% url 'properties:list' %}" class="text-accent small fw-medium">Ver todos <i class="bi bi-arrow-right"></i></a>
         </div>
         <div class="row g-4">
             {% for imovel in imoveis_recentes %}
             <div class="col-md-4">
-                <div class="card card-hover border-0 shadow-sm h-100">
-                    <div class="position-relative">
-                        <div class="bg-secondary bg-gradient text-white d-flex align-items-center justify-content-center" style="height: 200px;">
-                            <i class="bi bi-house-heart display-4 opacity-75"></i>
-                        </div>
-                        <span class="badge bg-warning text-dark position-absolute top-2 end-2"><i class="bi bi-tag me-1"></i>Para Alugar</span>
+                <div class="card-min d-flex flex-column h-100 p-4">
+                    <h3 class="h6 fw-semibold mb-1">{{ imovel.endereco }}</h3>
+                    <p class="text-muted small mb-3"><i class="bi bi-geo-alt me-1"></i>{% if imovel.bairro %}{{ imovel.bairro }}, {% endif %}{{ imovel.cidade }}</p>
+                    <div class="fw-semibold fs-5 mb-3">R$ {{ imovel.valor_aluguel_display }}<span class="text-muted fw-normal fs-6">/mês</span></div>
+                    <div class="d-flex flex-wrap gap-3 text-muted small flex-grow-1">
+                        <span><i class="bi bi-door-open me-1"></i>{{ imovel.quartos }} quarto{{ imovel.quartos|pluralize }}</span>
+                        <span><i class="bi bi-droplet me-1"></i>{{ imovel.banheiros }} banh.</span>
+                        <span><i class="bi bi-car-front me-1"></i>{{ imovel.garagem }} vaga{{ imovel.garagem|pluralize }}</span>
                     </div>
-                    <div class="card-body">
-                        <h5 class="text-primary fw-bold mb-1">{{ imovel.endereco|default:"Rua das Acácias, 123" }}</h5>
-                        <p class="text-muted small mb-2"><i class="bi bi-geo-alt me-1"></i>{{ imovel.bairro|default:"Centro" }}, {{ imovel.cidade|default:"Paulistana - PI" }}</p>
-                        <h4 class="text-success fw-bold mb-2">R$ {{ imovel.valor_aluguel|default:"950,00" }}<small class="text-muted fw-normal fs-6">/mês</small></h4>
-                        <div class="d-flex flex-wrap gap-3 small text-muted mb-3">
-                            <span><i class="bi bi-door-open me-1"></i>{{ imovel.quartos|default:2 }} quartos</span>
-                            <span><i class="bi bi-bath me-1"></i>{{ imovel.banheiros|default:1 }} banh.</span>
-                            <span><i class="bi bi-car-front me-1"></i>{{ imovel.garagem|default:1 }} vaga</span>
-                        </div>
-                        <div class="d-flex gap-2">
-                            {% if imovel.mobiliado %}<span class="badge bg-info text-dark"><i class="bi bi-sofa me-1"></i>Mobiliado</span>{% endif %}
-                            {% if imovel.aceita_animais %}<span class="badge bg-success"><i class="bi bi-heart-paw me-1"></i>Pet Friendly</span>{% endif %}
-                        </div>
+                    <div class="divider pt-3 d-flex flex-wrap gap-2">
+                        {% if imovel.mobiliado %}<span class="chip chip-muted">Mobiliado</span>{% endif %}
+                        {% if imovel.aceita_animais %}<span class="chip chip-muted">Aceita animais</span>{% endif %}
                     </div>
                 </div>
             </div>
             {% empty %}
-            <div class="col-md-4">
-                <div class="card card-hover border-0 shadow-sm h-100">
-                    <div class="position-relative">
-                        <div class="bg-secondary bg-gradient text-white d-flex align-items-center justify-content-center" style="height: 200px;">
-                            <i class="bi bi-house-heart display-4 opacity-75"></i>
-                        </div>
-                        <span class="badge bg-warning text-dark position-absolute top-2 end-2"><i class="bi bi-tag me-1"></i>Para Alugar</span>
-                    </div>
-                    <div class="card-body">
-                        <h5 class="text-primary fw-bold mb-1">Apartamento 2 quartos no centro</h5>
-                        <p class="text-muted small mb-2"><i class="bi bi-geo-alt me-1"></i>Centro, Paulistana - PI</p>
-                        <h4 class="text-success fw-bold mb-2">R$ 950,00<small class="text-muted fw-normal fs-6">/mês</small></h4>
-                        <div class="d-flex flex-wrap gap-3 small text-muted mb-3">
-                            <span><i class="bi bi-door-open me-1"></i>2 quartos</span>
-                            <span><i class="bi bi-bath me-1"></i>1 banh.</span>
-                            <span><i class="bi bi-car-front me-1"></i>1 vaga</span>
-                        </div>
-                        <div class="d-flex gap-2">
-                            <span class="badge bg-info text-dark"><i class="bi bi-sofa me-1"></i>Mobiliado</span>
-                            <span class="badge bg-success"><i class="bi bi-heart-paw me-1"></i>Pet Friendly</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card card-hover border-0 shadow-sm h-100">
-                    <div class="position-relative">
-                        <div class="bg-secondary bg-gradient text-white d-flex align-items-center justify-content-center" style="height: 200px;">
-                            <i class="bi bi-house-heart display-4 opacity-75"></i>
-                        </div>
-                        <span class="badge bg-warning text-dark position-absolute top-2 end-2"><i class="bi bi-tag me-1"></i>Para Alugar</span>
-                    </div>
-                    <div class="card-body">
-                        <h5 class="text-primary fw-bold mb-1">Casa térrea 3 quartos</h5>
-                        <p class="text-muted small mb-2"><i class="bi bi-geo-alt me-1"></i>Boa Vista, Paulistana - PI</p>
-                        <h4 class="text-success fw-bold mb-2">R$ 1.450,00<small class="text-muted fw-normal fs-6">/mês</small></h4>
-                        <div class="d-flex flex-wrap gap-3 small text-muted mb-3">
-                            <span><i class="bi bi-door-open me-1"></i>3 quartos</span>
-                            <span><i class="bi bi-bath me-1"></i>2 banh.</span>
-                            <span><i class="bi bi-car-front me-1"></i>2 vagas</span>
-                        </div>
-                        <div class="d-flex gap-2">
-                            <span class="badge bg-success"><i class="bi bi-heart-paw me-1"></i>Pet Friendly</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card card-hover border-0 shadow-sm h-100">
-                    <div class="position-relative">
-                        <div class="bg-secondary bg-gradient text-white d-flex align-items-center justify-content-center" style="height: 200px;">
-                            <i class="bi bi-house-heart display-4 opacity-75"></i>
-                        </div>
-                        <span class="badge bg-warning text-dark position-absolute top-2 end-2"><i class="bi bi-tag me-1"></i>Para Alugar</span>
-                    </div>
-                    <div class="card-body">
-                        <h5 class="text-primary fw-bold mb-1">Kitnet mobiliada no centro</h5>
-                        <p class="text-muted small mb-2"><i class="bi bi-geo-alt me-1"></i>Centro, Paulistana - PI</p>
-                        <h4 class="text-success fw-bold mb-2">R$ 650,00<small class="text-muted fw-normal fs-6">/mês</small></h4>
-                        <div class="d-flex flex-wrap gap-3 small text-muted mb-3">
-                            <span><i class="bi bi-door-open me-1"></i>1 quarto</span>
-                            <span><i class="bi bi-bath me-1"></i>1 banh.</span>
-                            <span><i class="bi bi-rulers me-1"></i>30 m²</span>
-                        </div>
-                        <div class="d-flex gap-2">
-                            <span class="badge bg-info text-dark"><i class="bi bi-sofa me-1"></i>Mobiliado</span>
-                        </div>
-                    </div>
+            <div class="col-12">
+                <div class="empty-state">
+                    <i class="bi bi-house d-block mb-2"></i>
+                    <p class="mb-1 fw-medium">Nenhum imóvel anunciado ainda</p>
+                    <p class="text-muted small mb-0">Os imóveis publicados aparecerão aqui.</p>
                 </div>
             </div>
             {% endfor %}
@@ -279,29 +138,17 @@
     </div>
 </section>
 
-<section class="py-5 bg-primary-ifpi text-white">
-    <div class="container text-center">
-        <h2 class="fw-bold mb-3">Você é Empresa ou Proprietário?</h2>
-        <p class="lead mb-4 opacity-90">Publique suas vagas e imóveis e seja encontrado por centenas de candidatos e inquilinos.</p>
-        <div class="row g-4 justify-content-center">
-            <div class="col-md-5">
-                <div class="card text-dark h-100">
-                    <div class="card-body p-4">
-                        <i class="bi bi-building-check display-4 text-primary-ifpi"></i>
-                        <h4 class="mt-3">Para Empresas</h4>
-                        <p class="text-muted">Publique vagas gratuitamente e receba candidatos qualificados.</p>
-                        <a href="{% url 'core:register' %}" class="btn btn-primary-ifpi w-100"><i class="bi bi-briefcase me-1"></i>Cadastrar Empresa</a>
-                    </div>
+<section class="section pt-0">
+    <div class="container">
+        <div class="card-flat p-4 p-md-5">
+            <div class="row align-items-center g-4">
+                <div class="col-lg-7">
+                    <h2 class="section-title mb-2">Você é empresa ou proprietário?</h2>
+                    <p class="lead-min mb-0">Publique suas vagas e imóveis gratuitamente e alcance mais pessoas da região.</p>
                 </div>
-            </div>
-            <div class="col-md-5">
-                <div class="card text-dark h-100">
-                    <div class="card-body p-4">
-                        <i class="bi bi-house-up display-4 text-primary"></i>
-                        <h4 class="mt-3">Para Proprietários</h4>
-                        <p class="text-muted">Anuncie seus imóveis para alugar e encontre inquilinos ideais para sua região.</p>
-                        <a href="{% url 'core:register' %}" class="btn btn-primary w-100"><i class="bi bi-house-heart me-1"></i>Cadastrar Imóvel</a>
-                    </div>
+                <div class="col-lg-5 d-flex flex-column flex-sm-row gap-2 justify-content-lg-end">
+                    <a href="{% url 'jobs:create' %}" class="btn btn-accent px-4 py-2"><i class="bi bi-briefcase me-2"></i>Publicar vaga</a>
+                    <a href="{% url 'properties:create' %}" class="btn btn-ghost px-4 py-2"><i class="bi bi-house me-2"></i>Anunciar imóvel</a>
                 </div>
             </div>
         </div>

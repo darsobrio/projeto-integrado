@@ -4,18 +4,24 @@ import os
 from datetime import datetime
 
 from django.contrib import messages
-from django.contrib.auth import update_session_auth_hash
-from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
+from django.core.files.storage import default_storage
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from google.cloud import firestore
 
 from core import db
+from core.auth import login_required
 from core.firebase_auth import alterar_senha, autenticar_firebase
+from core.user import (
+    ArquivoRemoto,
+    obter_perfil,
+    obter_usuario_por_identificador,
+    salvar_perfil,
+    salvar_usuario,
+)
 from core.utils import chave_data
 from jobs.views import converter_vaga
-from users.models import CustomUser, PerfilCandidato
 
 EXTENSOES_IMAGEM = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
 TAMANHO_MAXIMO_IMAGEM = 5 * 1024 * 1024
@@ -116,39 +122,6 @@ def campos_pendentes(usuario, perfil_candidato):
     ]
 
 
-def espelhar_no_firestore(usuario, perfil_candidato=None):
-    """Mantém o documento do usuário no Firestore igual ao banco local."""
-    uid = getattr(usuario, "firebase_uid", None)
-
-    if not uid:
-        return
-
-    try:
-        db.collection("usuarios").document(uid).set(
-            {
-                "firebase_uid": uid,
-                "email": usuario.email,
-                "nome_completo": usuario.nome_completo or "",
-                "tipo_usuario": usuario.tipo_usuario,
-                "cidade": usuario.cidade or "",
-                "telefone": usuario.telefone or "",
-                "endereco": usuario.endereco or "",
-                "foto_url": usuario.foto_perfil.url if usuario.foto_perfil else None,
-                "curriculo_url": (
-                    perfil_candidato.curriculo_pdf.url
-                    if perfil_candidato is not None
-                    and perfil_candidato.curriculo_pdf
-                    else None
-                ),
-                "atualizado_em": firestore.SERVER_TIMESTAMP,
-            },
-            merge=True,
-        )
-    except Exception:
-        # O Firestore é um espelho: se falhar, o dado local continua válido.
-        pass
-
-
 def salvar_dados_conta(request, usuario):
     nome = request.POST.get("nome_completo", "").strip()
 
@@ -182,9 +155,13 @@ def salvar_dados_conta(request, usuario):
             return False
 
     if foto:
-        usuario.foto_perfil = foto
+        extensao = os.path.splitext(foto.name)[1].lower()
+        caminho = default_storage.save(
+            f"perfis/{usuario.firebase_uid}{extensao}", foto
+        )
+        usuario.foto_perfil = ArquivoRemoto(caminho)
 
-    usuario.save()
+    salvar_usuario(usuario)
     messages.success(request, "Dados da conta atualizados com sucesso.")
     return True
 
@@ -205,9 +182,12 @@ def salvar_perfil_profissional(request, perfil_candidato):
         setattr(perfil_candidato, campo, request.POST.get(campo, "").strip() or None)
 
     if curriculo:
-        perfil_candidato.curriculo_pdf = curriculo
+        caminho = default_storage.save(
+            f"curriculos/{perfil_candidato.firebase_uid}.pdf", curriculo
+        )
+        perfil_candidato.curriculo_pdf = ArquivoRemoto(caminho)
 
-    perfil_candidato.save()
+    salvar_perfil(perfil_candidato)
     messages.success(request, "Perfil profissional atualizado com sucesso.")
     return True
 
@@ -244,11 +224,6 @@ def salvar_nova_senha(request, usuario):
         )
         return False
 
-    # Mantém o acesso local (fallback do login) igual ao do Firebase.
-    usuario.set_password(nova_senha)
-    usuario.save(update_fields=["password"])
-    update_session_auth_hash(request, usuario)
-
     messages.success(request, "Senha alterada com sucesso.")
     return True
 
@@ -260,24 +235,17 @@ def perfil(request):
     perfil_candidato = None
 
     if usuario.tipo_usuario == "candidato":
-        perfil_candidato, _ = PerfilCandidato.objects.get_or_create(
-            usuario=usuario
-        )
+        perfil_candidato = obter_perfil(usuario.firebase_uid, criar=True)
 
     if request.method == "POST":
         secao = request.POST.get("secao", "conta")
-        sucesso = False
 
         if secao == "conta":
-            sucesso = salvar_dados_conta(request, usuario)
+            salvar_dados_conta(request, usuario)
         elif secao == "profissional" and perfil_candidato is not None:
-            sucesso = salvar_perfil_profissional(request, perfil_candidato)
+            salvar_perfil_profissional(request, perfil_candidato)
         elif secao == "seguranca":
             salvar_nova_senha(request, usuario)
-            return redirect(f"{reverse('users:perfil')}?aba=seguranca")
-
-        if sucesso:
-            espelhar_no_firestore(usuario, perfil_candidato)
 
         return redirect(f"{reverse('users:perfil')}?aba={secao}")
 
@@ -298,32 +266,17 @@ def perfil(request):
 # Perfis públicos
 # ---------------------------------------------------------------------------
 
-def localizar_usuario(uid):
-    """Localiza um usuário pelo ``firebase_uid`` (ou pela própria chave local)."""
-    uid = str(uid or "").strip()
-
-    if not uid:
-        return None
-
-    usuario = CustomUser.objects.filter(firebase_uid=uid).first()
-
-    if usuario is None and uid.isdigit():
-        usuario = CustomUser.objects.filter(pk=int(uid)).first()
-
-    return usuario
-
 
 def perfil_do_usuario(usuario):
     if usuario.tipo_usuario == "candidato":
-        perfil, _ = PerfilCandidato.objects.get_or_create(usuario=usuario)
-        return perfil
+        return obter_perfil(usuario.firebase_uid, criar=True)
 
     return None
 
 
 def empresa_detalhe(request, uid):
     """Perfil público da empresa, com todas as vagas abertas."""
-    empresa = localizar_usuario(uid)
+    empresa = obter_usuario_por_identificador(uid)
 
     if empresa is None or empresa.tipo_usuario != "empresa":
         messages.error(request, "Empresa não encontrada.")
@@ -369,7 +322,7 @@ def candidato_detalhe(request, uid):
     O currículo em PDF só é liberado para o próprio candidato e para
     empresas autenticadas (privacidade dos dados pessoais).
     """
-    candidato = localizar_usuario(uid)
+    candidato = obter_usuario_por_identificador(uid)
 
     if candidato is None or candidato.tipo_usuario != "candidato":
         messages.error(request, "Candidato não encontrado.")

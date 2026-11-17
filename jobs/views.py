@@ -2,7 +2,6 @@ from datetime import date, datetime
 from types import SimpleNamespace
 
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -10,10 +9,18 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from google.cloud import firestore
 
 from core import db
+from core.auth import login_required
 from core.emails import enviar_email
 from core.moderation import LIMITE_VAGAS_POR_EMPRESA
 from core.notificacoes import criar_notificacao
 from core.pagination import paginar
+from core.user import (
+    obter_perfil,
+    obter_perfis,
+    obter_usuario,
+    obter_usuario_por_identificador,
+    obter_usuarios,
+)
 from core.utils import (
     MODALIDADE_CHOICES,
     MODALIDADE_LABELS,
@@ -28,7 +35,6 @@ from core.utils import (
     numero_inteiro,
     rotulo,
 )
-from users.models import CustomUser, PerfilCandidato
 
 STATUS_CANDIDATURA_VALIDOS = {
     "enviada",
@@ -297,12 +303,7 @@ def job_detail(request, pk):
     empresa_verificada = False
     empresa = None
 
-    try:
-        empresa = CustomUser.objects.filter(
-            pk=getattr(vaga, "empresa_id", None)
-        ).first()
-    except (TypeError, ValueError):
-        empresa = None
+    empresa = obter_usuario_por_identificador(getattr(vaga, "empresa_id", None))
 
     if empresa is not None:
         empresa_verificada = bool(empresa.verificado)
@@ -342,9 +343,9 @@ def job_detail(request, pk):
             "observacoes": "",
         })
 
-        empresa_dona = CustomUser.objects.filter(
-            pk=getattr(vaga, "empresa_id", None)
-        ).first()
+        empresa_dona = obter_usuario_por_identificador(
+            getattr(vaga, "empresa_id", None)
+        )
 
         if empresa_dona is not None and empresa_dona.firebase_uid:
             criar_notificacao(
@@ -581,10 +582,10 @@ def buscar_email_candidato(candidatura):
     usuario = None
 
     if uid:
-        usuario = CustomUser.objects.filter(firebase_uid=uid).first()
+        usuario = obter_usuario(uid)
 
     if usuario is None and candidato_id:
-        usuario = CustomUser.objects.filter(pk=candidato_id).first()
+        usuario = obter_usuario_por_identificador(candidato_id)
 
     if usuario is not None and usuario.email:
         return usuario.email
@@ -693,48 +694,41 @@ PIPELINE_STATUS = ["enviada", "em_analise", "entrevista", "aprovado", "recusado"
 def mapa_candidatos(uids):
     """Reúne dados de exibição dos candidatos (nome, foto, currículo).
 
-    Usa o espelho no Firestore como fonte principal e o banco local como
-    reforço, evitando uma leitura por candidatura.
+    Faz duas leituras no total (usuários e perfis), evitando uma consulta por
+    candidatura.
     """
     uids = {str(uid) for uid in uids if uid}
 
     if not uids:
         return {}
 
-    locais = {
-        usuario.firebase_uid: usuario
-        for usuario in CustomUser.objects.filter(firebase_uid__in=uids)
-    }
-
-    espelhos = {}
-    for documento in db.collection("usuarios").stream():
-        if documento.id in uids:
-            espelhos[documento.id] = documento.to_dict() or {}
+    usuarios = obter_usuarios(uids)
+    perfis = obter_perfis(uids)
 
     resultado = {}
 
     for uid in uids:
-        info = espelhos.get(uid, {})
-        usuario = locais.get(uid)
+        usuario = usuarios.get(uid)
+        perfil = perfis.get(uid)
 
         resultado[uid] = SimpleNamespace(
             uid=uid,
             nome=(
-                info.get("nome_completo")
-                or (usuario.nome_completo if usuario else None)
+                (usuario.nome_completo if usuario else None)
                 or (usuario.email if usuario else None)
                 or "Candidato"
             ),
-            cidade=info.get("cidade") or (usuario.cidade if usuario else "") or "",
+            cidade=(usuario.cidade if usuario else "") or "",
             foto_url=(
-                info.get("foto_url")
-                or (
-                    usuario.foto_perfil.url
-                    if usuario and usuario.foto_perfil
-                    else None
-                )
+                usuario.foto_perfil.url
+                if usuario and usuario.foto_perfil
+                else None
             ),
-            curriculo_url=info.get("curriculo_url") or None,
+            curriculo_url=(
+                perfil.curriculo_pdf.url
+                if perfil and perfil.curriculo_pdf
+                else None
+            ),
             perfil_url=reverse("users:candidato_detalhe", kwargs={"uid": uid}),
         )
 
@@ -1174,10 +1168,10 @@ def email_do_usuario(uid=None, pk=None):
     usuario = None
 
     if uid:
-        usuario = CustomUser.objects.filter(firebase_uid=str(uid)).first()
+        usuario = obter_usuario(uid)
 
     if usuario is None and pk:
-        usuario = CustomUser.objects.filter(pk=pk).first()
+        usuario = obter_usuario_por_identificador(pk)
 
     if usuario is not None and usuario.email:
         return usuario.email
@@ -1195,7 +1189,7 @@ def nome_do_candidato(uid):
     if not uid:
         return "Candidato"
 
-    usuario = CustomUser.objects.filter(firebase_uid=str(uid)).first()
+    usuario = obter_usuario(uid)
 
     if usuario is not None and usuario.nome_completo:
         return usuario.nome_completo
@@ -1311,9 +1305,7 @@ def conversa(request, vaga_id, candidato_uid):
         curriculo_url = None
 
         if anexar and not sou_empresa:
-            perfil = PerfilCandidato.objects.filter(
-                usuario=request.user
-            ).first()
+            perfil = obter_perfil(request.user.firebase_uid)
 
             if perfil is not None and perfil.curriculo_pdf:
                 curriculo_url = perfil.curriculo_pdf.url
@@ -1326,9 +1318,7 @@ def conversa(request, vaga_id, candidato_uid):
         if not texto and not curriculo_url:
             messages.error(request, "Escreva uma mensagem para enviar.")
         else:
-            candidato = CustomUser.objects.filter(
-                firebase_uid=str(candidato_uid)
-            ).first()
+            candidato = obter_usuario(str(candidato_uid))
 
             db.collection("mensagens").document().set({
                 "conversa_id": id_conversa(vaga_id, candidato_uid),
@@ -1382,9 +1372,7 @@ def conversa(request, vaga_id, candidato_uid):
                     ),
                 )
             else:
-                empresa_usuario = CustomUser.objects.filter(
-                    pk=empresa_id
-                ).first()
+                empresa_usuario = obter_usuario_por_identificador(empresa_id)
 
                 if empresa_usuario is not None and empresa_usuario.firebase_uid:
                     criar_notificacao(
@@ -1409,9 +1397,7 @@ def conversa(request, vaga_id, candidato_uid):
             candidato_uid=candidato_uid,
         )
 
-    perfil = PerfilCandidato.objects.filter(
-        usuario__firebase_uid=str(candidato_uid)
-    ).first()
+    perfil = obter_perfil(str(candidato_uid))
 
     return render(request, "jobs_conversa.html", {
         "vaga": SimpleNamespace(pk=str(vaga_id), **dados_vaga),

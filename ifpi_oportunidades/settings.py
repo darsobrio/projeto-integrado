@@ -1,7 +1,6 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-import dj_database_url
 from django.core.exceptions import ImproperlyConfigured
 
 load_dotenv()
@@ -28,9 +27,6 @@ ALLOWED_HOSTS = _lista_de_env('ALLOWED_HOSTS') or (['*'] if DEBUG else [])
 CSRF_TRUSTED_ORIGINS = _lista_de_env('CSRF_TRUSTED_ORIGINS')
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
@@ -48,7 +44,7 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'core.middleware.SessaoFirebaseMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -64,7 +60,7 @@ TEMPLATES = [
             'context_processors': [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
+                'core.context_processors.usuario',
                 'django.contrib.messages.context_processors.messages',
                 'core.context_processors.notificacoes',
             ],
@@ -75,33 +71,15 @@ TEMPLATES = [
 WSGI_APPLICATION = 'ifpi_oportunidades.wsgi.application'
 ASGI_APPLICATION = 'ifpi_oportunidades.asgi.application'
 
-_db_engine = os.getenv('DB_ENGINE', 'sqlite').lower()
-if _db_engine == 'sqlite':
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
-else:
-    DATABASES = {
-        'default': dj_database_url.config(
-            default=os.getenv(
-                'DATABASE_URL',
-                'postgres://postgres:postgres@localhost:5432/ifpi_oportunidades'
-            ),
-            conn_max_age=600,
-        )
-    }
+# ---------------------------------------------------------------------------
+# Armazenamento de dados
+# ---------------------------------------------------------------------------
+# Todo o dado da aplicação vive no Firebase (Firestore + Firebase Auth).
+# Não há banco local: o projeto roda sem SQLite/PostgreSQL.
+DATABASES = {}
 
-AUTH_USER_MODEL = 'users.CustomUser'
-
-AUTH_PASSWORD_VALIDATORS = [
-    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
-]
+# A sessão é guardada em cookie assinado (nada é gravado no servidor).
+SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 
 LANGUAGE_CODE = 'pt-br'
 TIME_ZONE = 'America/Fortaleza'
@@ -118,23 +96,12 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # ---------------------------------------------------------------------------
 # Armazenamento de arquivos (uploads)
 # ---------------------------------------------------------------------------
-# Com USE_FIREBASE_STORAGE=False os arquivos ficam no disco local (media/).
-# Em produção, defina USE_FIREBASE_STORAGE=True e FIREBASE_STORAGE_BUCKET.
-USE_FIREBASE_STORAGE = os.getenv('USE_FIREBASE_STORAGE', 'False') == 'True'
-FIREBASE_STORAGE_BUCKET = os.getenv('FIREBASE_STORAGE_BUCKET', '')
-
+# Os dados ficam no Firebase; apenas os ARQUIVOS enviados (foto de perfil,
+# currículo, fotos de imóvel, comprovantes) ficam no disco do servidor, em
+# MEDIA_ROOT. O Firebase Storage exige o plano pago, por isso não é usado.
 STORAGES = {
     'default': {
-        'BACKEND': (
-            'core.storage.FirebaseStorage'
-            if USE_FIREBASE_STORAGE
-            else 'django.core.files.storage.FileSystemStorage'
-        ),
-        'OPTIONS': (
-            {'bucket_name': FIREBASE_STORAGE_BUCKET}
-            if USE_FIREBASE_STORAGE
-            else {}
-        ),
+        'BACKEND': 'django.core.files.storage.FileSystemStorage',
     },
     'staticfiles': {
         'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
@@ -154,12 +121,12 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
+        'core.auth.AutenticacaoFirebase',
     ],
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
     ],
-    'UNAUTHENTICATED_USER': 'django.contrib.auth.models.AnonymousUser',
+    'UNAUTHENTICATED_USER': 'core.user.AnonymousUser',
 }
 
 LOGIN_URL = '/login/'

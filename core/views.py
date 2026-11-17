@@ -3,9 +3,6 @@ from datetime import datetime
 from types import SimpleNamespace
 
 from django.contrib import messages
-from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
 from django.core.files.storage import default_storage
 from django.http import JsonResponse, QueryDict
 from django.shortcuts import redirect, render
@@ -15,6 +12,7 @@ from firebase_admin import auth as firebase_auth
 from firebase_admin.exceptions import InvalidArgumentError
 
 from core import db
+from core.auth import login, logout, login_required, staff_member_required
 from core.emails import enviar_email
 from core.firebase_auth import (
     autenticar_firebase,
@@ -39,10 +37,10 @@ from core.notificacoes import (
     marcar_todas_lidas,
     notificacoes_do_usuario,
 )
+from core.user import criar_usuario, existe_cpf, existe_email, obter_usuario
 from core.utils import validar_cpf_cnpj
 from jobs.views import converter_vaga
 from properties.views import converter_imovel
-from users.models import CustomUser
 
 EXTENSOES_DOCUMENTO = {".pdf", ".jpg", ".jpeg", ".png", ".webp"}
 TAMANHO_MAXIMO_DOCUMENTO = 10 * 1024 * 1024
@@ -178,7 +176,7 @@ def register(request):
         messages.error(request, 'As senhas não conferem.')
         return render(request, 'register.html')
 
-    if CustomUser.objects.filter(email__iexact=email).exists():
+    if existe_email(email):
         messages.error(
             request,
             'Este e-mail já está cadastrado. Faça login ou use outro e-mail.',
@@ -191,7 +189,7 @@ def register(request):
         messages.error(request, 'CPF/CNPJ inválido. Confira os números informados.')
         return render(request, 'register.html')
 
-    if cpf and CustomUser.objects.filter(cpf=cpf).exists():
+    if cpf and existe_cpf(cpf):
         messages.error(request, 'Este CPF/CNPJ já está cadastrado.')
         return render(request, 'register.html')
 
@@ -218,35 +216,17 @@ def register(request):
         )
         uid = dados_firebase['uid']
 
-        usuario = CustomUser.objects.create_user(
-            username=email,
+        usuario = criar_usuario(
+            firebase_uid=uid,
             email=email,
-            password=senha,
             nome_completo=nome,
             tipo_usuario=tipo,
+            username=email,
             cidade=request.POST.get('cidade', '').strip() or None,
             telefone=request.POST.get('telefone', '').strip() or None,
             cpf=cpf,
             data_nascimento=data_nascimento,
-            firebase_uid=uid,
         )
-
-        db.collection('usuarios').document(uid).set({
-            'firebase_uid': uid,
-            'username': usuario.username,
-            'email': usuario.email,
-            'nome_completo': usuario.nome_completo,
-            'tipo_usuario': usuario.tipo_usuario,
-            'cidade': usuario.cidade,
-            'telefone': usuario.telefone,
-            'cpf': usuario.cpf,
-            'data_nascimento': (
-                usuario.data_nascimento.isoformat()
-                if usuario.data_nascimento
-                else None
-            ),
-            'is_active': usuario.is_active,
-        })
 
         login(request, usuario)
         messages.success(
@@ -269,12 +249,6 @@ def register(request):
         )
     except Exception:
         # Desfaz o que já foi criado para não deixar dados órfãos.
-        if usuario is not None:
-            try:
-                usuario.delete()
-            except Exception:
-                pass
-
         if uid:
             try:
                 db.collection('usuarios').document(uid).delete()
@@ -310,24 +284,14 @@ def login_view(request):
                     uid = token_verificado.get('uid')
                     email_verificado = token_verificado.get('email', '').strip().lower()
                     if uid and email_verificado == email:
-                        usuario = CustomUser.objects.filter(
-                            firebase_uid=uid,
-                            email__iexact=email_verificado,
-                        ).first()
+                        candidato = obter_usuario(uid)
+
+                        if candidato is not None and (
+                            candidato.email or ''
+                        ).strip().lower() == email_verificado:
+                            usuario = candidato
         except Exception:
             usuario = None
-
-        if usuario is None:
-            usuario_django = CustomUser.objects.filter(
-                email__iexact=email
-            ).first()
-
-            if usuario_django and usuario_django.has_usable_password():
-                usuario = authenticate(
-                    request,
-                    username=usuario_django.username,
-                    password=senha,
-                )
 
         if usuario is not None:
             login(request, usuario)

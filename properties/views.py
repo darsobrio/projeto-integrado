@@ -4,7 +4,6 @@ from types import SimpleNamespace
 from uuid import uuid4
 
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.core.files.storage import default_storage
 from django.shortcuts import redirect, render
@@ -12,6 +11,7 @@ from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 
 from core import db
+from core.auth import login_required
 from core.moderation import LIMITE_IMOVEIS_POR_PROPRIETARIO
 from core.pagination import paginar
 from core.utils import (

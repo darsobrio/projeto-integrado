@@ -205,9 +205,9 @@ def definir_status_verificacao(pk, aprovada):
     if aprovada:
         usuario_id = dados.get("usuario_id")
         if usuario_id:
-            from users.models import CustomUser
+            from core.user import definir_verificado
 
-            CustomUser.objects.filter(pk=usuario_id).update(verificado=True)
+            definir_verificado(usuario_id, True)
 
     criar_notificacao(
         dados.get("usuario_uid"),

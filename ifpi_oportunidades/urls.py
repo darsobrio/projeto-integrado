@@ -9,6 +9,7 @@ urlpatterns = [
     path('usuarios/', include('users.urls')),
     path('vagas/', include('jobs.urls')),
     path('imoveis/', include('properties.urls')),
+    path('api/', include('api.urls')),
 ]
 
 if settings.DEBUG:

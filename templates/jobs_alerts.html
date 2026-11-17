@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}Alertas de vagas - Oportunet{% endblock %}
+
+{% block content %}
+<section class="page-band">
+    <div class="container">
+        <a href="{% url 'jobs:list' %}" class="small text-muted d-inline-block mb-3"><i class="bi bi-arrow-left me-1"></i>Voltar para vagas</a>
+        <span class="eyebrow">Candidato</span>
+        <h1 class="page-title mt-2 mb-1">Alertas de vagas</h1>
+        <p class="text-muted mb-0">Receba um e-mail quando surgir uma vaga que combine com os seus filtros.</p>
+    </div>
+</section>
+
+<section class="section pt-4 pb-5">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-5">
+                <form method="POST" class="card-flat p-4 p-md-5">
+                    {% csrf_token %}
+                    <h2 class="h6 fw-semibold mb-3"><i class="bi bi-bell text-accent me-2"></i>Novo alerta</h2>
+
+                    <div class="mb-3">
+                        <label class="form-label">Palavra-chave</label>
+                        <input type="text" name="q" class="form-control" placeholder="Ex: estágio, auxiliar administrativo">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Local</label>
+                        <input type="text" name="local" class="form-control" placeholder="Ex: Paulistana">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tipo de contrato</label>
+                        <select name="tipo_contrato" class="form-select">
+                            <option value="">Qualquer</option>
+                            {% for valor, rotulo in tipo_contrato_choices %}
+                                <option value="{{ valor }}">{{ rotulo }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label">Modalidade</label>
+                        <select name="modalidade" class="form-select">
+                            <option value="">Qualquer</option>
+                            {% for valor, rotulo in modalidade_choices %}
+                                <option value="{{ valor }}">{{ rotulo }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="input-hint mb-3">Preencha pelo menos um filtro. Avisaremos por e-mail a cada vaga nova compatível.</div>
+                    <button type="submit" class="btn btn-accent w-100 py-2"><i class="bi bi-plus-lg me-1"></i>Criar alerta</button>
+                </form>
+            </div>
+
+            <div class="col-lg-7">
+                <h2 class="h6 fw-semibold mb-3"><i class="bi bi-bell-fill text-accent me-2"></i>Meus alertas</h2>
+                <div class="d-flex flex-column gap-3">
+                    {% for alerta in alertas %}
+                    <div class="card-min p-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="icon-square"><i class="bi bi-funnel"></i></span>
+                            <div class="fw-medium">{{ alerta.descricao }}</div>
+                        </div>
+                        <form method="POST" action="{% url 'jobs:alerta_remover' alerta.pk %}" onsubmit="return confirm('Remover este alerta?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-ghost btn-sm px-3 text-danger" title="Remover alerta"><i class="bi bi-trash"></i></button>
+                        </form>
+                    </div>
+                    {% empty %}
+                    <div class="empty-state">
+                        <i class="bi bi-bell d-block mb-2"></i>
+                        <p class="mb-1 fw-medium">Nenhum alerta criado</p>
+                        <p class="text-muted small mb-0">Crie um alerta e não perca nenhuma oportunidade.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

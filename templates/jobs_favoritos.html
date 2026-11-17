@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block title %}Vagas favoritas - Oportunet{% endblock %}
+
+{% block content %}
+<section class="page-band">
+    <div class="container">
+        <a href="{% url 'jobs:list' %}" class="small text-muted d-inline-block mb-3"><i class="bi bi-arrow-left me-1"></i>Voltar para vagas</a>
+        <span class="eyebrow">Candidato</span>
+        <h1 class="page-title mt-2 mb-1">Vagas favoritas</h1>
+        <p class="text-muted mb-0">{{ vagas|length }} vaga{{ vagas|length|pluralize }} salva{{ vagas|length|pluralize }}</p>
+    </div>
+</section>
+
+<section class="section pt-4 pb-5">
+    <div class="container">
+        <div class="d-flex flex-column gap-3">
+            {% for vaga in vagas %}
+            <div class="card-min p-4">
+                <div class="row g-3 align-items-center">
+                    <div class="col-lg-8">
+                        <div class="d-flex align-items-start gap-3">
+                            <span class="icon-square"><i class="bi bi-briefcase"></i></span>
+                            <div>
+                                <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                                    <h2 class="h6 fw-semibold mb-0">{{ vaga.funcao }}</h2>
+                                    <span class="chip {% if vaga.aberta %}chip-ok{% else %}chip-muted{% endif %}">{{ vaga.status_display }}</span>
+                                </div>
+                                <p class="text-muted small mb-1"><i class="bi bi-building me-1"></i>{{ vaga.nome_empresa }}</p>
+                                <p class="text-muted small mb-3"><i class="bi bi-geo-alt me-1"></i>{{ vaga.endereco|default:"Paulistana - PI" }}</p>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <span class="chip chip-muted">{{ vaga.tipo_contrato_display }}</span>
+                                    <span class="chip chip-muted">{{ vaga.modalidade_display }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 d-flex flex-column align-items-lg-end gap-3">
+                        <div class="text-lg-end">
+                            <div class="fs-5 fw-semibold">{% if vaga.salario_display %}R$ {{ vaga.salario_display }}{% else %}A combinar{% endif %}</div>
+                            {% if vaga.salario_display %}<small class="text-muted">por mês</small>{% endif %}
+                        </div>
+                        <div class="d-flex gap-2 w-100 justify-content-lg-end">
+                            <form method="POST" action="{% url 'jobs:favoritar' vaga.pk %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="next" value="{{ request.path }}">
+                                <button type="submit" class="btn btn-ghost px-3" title="Remover dos favoritos">
+                                    <i class="bi bi-heart-fill text-accent"></i>
+                                </button>
+                            </form>
+                            <a href="{% url 'jobs:detail' vaga.pk %}" class="btn btn-accent px-4 flex-grow-1">Ver detalhes</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state">
+                <i class="bi bi-heart d-block mb-2"></i>
+                <p class="mb-1 fw-medium">Você ainda não salvou nenhuma vaga</p>
+                <p class="text-muted small mb-3">Toque no coração das vagas que te interessam para salvá-las aqui.</p>
+                <a href="{% url 'jobs:list' %}" class="btn btn-accent">Ver vagas</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% block title %}{{ candidato.nome_completo|default:candidato.email }} - Oportunet{% endblock %}
+
+{% block content %}
+<section class="page-band">
+    <div class="container">
+        <div class="d-flex flex-wrap align-items-center gap-3">
+            {% if candidato.foto_perfil %}
+                <img src="{{ candidato.foto_perfil.url }}" alt="Foto de {{ candidato.nome_completo }}"
+                     style="width:72px;height:72px;border-radius:50%;object-fit:cover;border:1px solid var(--border);">
+            {% else %}
+                <span class="icon-square icon-square-lg"><i class="bi bi-person"></i></span>
+            {% endif %}
+            <div class="flex-grow-1">
+                <span class="eyebrow">Candidato</span>
+                <h1 class="page-title mt-1 mb-1">{{ candidato.nome_completo|default:candidato.email }}</h1>
+                <div class="d-flex flex-wrap gap-2">
+                    {% if perfil.escolaridade %}<span class="chip chip-accent"><i class="bi bi-mortarboard"></i>{{ perfil.get_escolaridade_display }}</span>{% endif %}
+                    {% if candidato.cidade %}<span class="chip chip-muted"><i class="bi bi-geo-alt"></i>{{ candidato.cidade }}</span>{% endif %}
+                    {% if perfil.idiomas %}<span class="chip chip-muted"><i class="bi bi-translate"></i>{{ perfil.idiomas }}</span>{% endif %}
+                </div>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                {% if perfil.curriculo_pdf and pode_ver_curriculo %}
+                    <a href="{{ perfil.curriculo_pdf.url }}" target="_blank" rel="noopener" class="btn btn-soft"><i class="bi bi-file-earmark-pdf me-1"></i>Ver currículo</a>
+                {% endif %}
+                {% if perfil.link_portfolio %}
+                    <a href="{{ perfil.link_portfolio }}" target="_blank" rel="noopener" class="btn btn-ghost"><i class="bi bi-link-45deg me-1"></i>Portfólio</a>
+                {% endif %}
+                {% if sou_dono %}
+                    <a href="{% url 'users:perfil' %}?aba=profissional" class="btn btn-ghost"><i class="bi bi-pencil me-1"></i>Editar perfil</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section pt-4">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-8">
+                {% if perfil.sobre_mim %}
+                <div class="card-flat p-4 mb-4">
+                    <h2 class="h6 fw-semibold mb-3"><i class="bi bi-person-lines-fill text-accent me-2"></i>Sobre mim</h2>
+                    <p class="text-muted mb-0" style="line-height:1.7;">{{ perfil.sobre_mim|linebreaksbr }}</p>
+                </div>
+                {% endif %}
+
+                {% if perfil.formacao_academica or perfil.instituicao or perfil.cursos or perfil.diplomas %}
+                <div class="card-flat p-4 mb-4">
+                    <h2 class="h6 fw-semibold mb-3"><i class="bi bi-mortarboard text-accent me-2"></i>Formação</h2>
+                    {% if perfil.instituicao %}<p class="mb-2"><span class="text-muted">Instituição:</span> {{ perfil.instituicao }}</p>{% endif %}
+                    {% if perfil.formacao_academica %}<p class="text-muted mb-3" style="line-height:1.7;">{{ perfil.formacao_academica|linebreaksbr }}</p>{% endif %}
+                    {% if perfil.cursos %}<p class="text-muted mb-3" style="line-height:1.7;">{{ perfil.cursos|linebreaksbr }}</p>{% endif %}
+                    {% if perfil.diplomas %}<p class="text-muted mb-0" style="line-height:1.7;">{{ perfil.diplomas|linebreaksbr }}</p>{% endif %}
+                </div>
+                {% endif %}
+
+                {% if perfil.experiencias %}
+                <div class="card-flat p-4 mb-4">
+                    <h2 class="h6 fw-semibold mb-3"><i class="bi bi-briefcase text-accent me-2"></i>Experiência profissional</h2>
+                    <p class="text-muted mb-0" style="line-height:1.7;">{{ perfil.experiencias|linebreaksbr }}</p>
+                </div>
+                {% endif %}
+
+                {% if not perfil.sobre_mim and not perfil.experiencias and not perfil.formacao_academica and not perfil.cursos %}
+                <div class="card-flat p-4">
+                    <div class="empty-state">
+                        <i class="bi bi-person-vcard d-block mb-2"></i>
+                        <p class="text-muted mb-0">Este candidato ainda não detalhou o perfil profissional.</p>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="col-lg-4">
+                {% if perfil.habilidades %}
+                <div class="card-flat p-4 mb-4">
+                    <h2 class="h6 fw-semibold mb-3"><i class="bi bi-stars text-accent me-2"></i>Habilidades</h2>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for habilidade in perfil.habilidades.splitlines %}
+                            {% if habilidade.strip %}<span class="chip chip-muted">{{ habilidade.strip }}</span>{% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if perfil.idiomas %}
+                <div class="card-flat p-4 mb-4">
+                    <h2 class="h6 fw-semibold mb-3"><i class="bi bi-translate text-accent me-2"></i>Idiomas</h2>
+                    <p class="text-muted mb-0">{{ perfil.idiomas }}</p>
+                </div>
+                {% endif %}
+
+                <div class="card-flat p-4">
+                    <h2 class="h6 fw-semibold mb-3"><i class="bi bi-file-earmark-pdf text-accent me-2"></i>Currículo</h2>
+                    {% if perfil.curriculo_pdf %}
+                        {% if pode_ver_curriculo %}
+                            <p class="text-muted small mb-3">Currículo em PDF enviado pelo candidato.</p>
+                            <a href="{{ perfil.curriculo_pdf.url }}" target="_blank" rel="noopener" class="btn btn-accent w-100"><i class="bi bi-download me-1"></i>Abrir currículo</a>
+                        {% else %}
+                            <p class="text-muted small mb-0"><i class="bi bi-lock me-1"></i>Disponível apenas para empresas autenticadas.</p>
+                        {% endif %}
+                    {% else %}
+                        <p class="text-muted small mb-0">Nenhum currículo anexado.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

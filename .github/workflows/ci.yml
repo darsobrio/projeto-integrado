@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  testes:
+    name: Testes automatizados
+    runs-on: ubuntu-latest
+
+    env:
+      SECRET_KEY: chave-de-testes-apenas-para-o-ci
+      DEBUG: 'True'
+      DB_ENGINE: sqlite
+
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v4
+
+      - name: Preparar o Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Instalar as dependências
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Criar credencial de teste do Firebase
+        # O site inicializa o Firebase Admin SDK ao importar "core".
+        # Como os testes não acessam o Firestore, basta uma credencial válida
+        # (a chave privada é gerada na hora e nunca sai deste runner).
+        run: |
+          openssl genrsa -out /tmp/firebase_key.pem 2048
+          python - <<'PY'
+          import json
+
+          with open('/tmp/firebase_key.pem') as arquivo:
+              chave = arquivo.read()
+
+          credencial = {
+              'type': 'service_account',
+              'project_id': 'oportunet-ci',
+              'private_key_id': 'ci',
+              'private_key': chave,
+              'client_email': 'ci@oportunet-ci.iam.gserviceaccount.com',
+              'client_id': '000000000000000000000',
+              'auth_uri': 'https://accounts.google.com/o/oauth2/auth',
+              'token_uri': 'https://oauth2.googleapis.com/token',
+          }
+
+          with open('serviceAccountKey.json', 'w') as arquivo:
+              json.dump(credencial, arquivo)
+          PY
+
+      - name: Verificar o projeto
+        run: python manage.py check
+
+      - name: Rodar os testes
+        run: python manage.py test --verbosity 2

@@ -3,49 +3,54 @@
 
 {% block content %}
 <section class="section">
-    <div class="container" style="max-width: 760px;">
-        <div class="mb-4">
-            <h1 class="page-title mb-1">Criar conta</h1>
+    <div class="container" style="max-width: 780px;">
+        <div class="text-center text-md-start mb-4">
+            <span class="eyebrow">Comece agora</span>
+            <h1 class="page-title mt-2 mb-1">Criar conta</h1>
             <p class="text-muted mb-0">Escolha seu perfil e informe seus dados. É gratuito.</p>
         </div>
 
         <form method="POST" class="card-flat p-4 p-md-5">
             {% csrf_token %}
 
-            <h2 class="h6 fw-semibold mb-3">Tipo de conta</h2>
+            <h2 class="h6 fw-semibold mb-3"><i class="bi bi-person-badge text-accent me-2"></i>Tipo de conta</h2>
             <div class="row g-3 mb-4">
                 <div class="col-md-4">
                     <input type="radio" class="btn-check" name="tipo_usuario" id="tipoCandidato" value="candidato" checked>
                     <label class="btn btn-ghost w-100 py-3 text-start" for="tipoCandidato">
+                        <i class="bi bi-person-lines-fill d-block fs-5 mb-1"></i>
                         <strong class="d-block">Candidato</strong>
-                        <small class="text-muted">Buscar vagas e imóveis</small>
+                        <small class="text-muted">Buscar vagas, enviar currículo e anunciar imóveis</small>
                     </label>
                 </div>
                 <div class="col-md-4">
                     <input type="radio" class="btn-check" name="tipo_usuario" id="tipoEmpresa" value="empresa">
                     <label class="btn btn-ghost w-100 py-3 text-start" for="tipoEmpresa">
+                        <i class="bi bi-building d-block fs-5 mb-1"></i>
                         <strong class="d-block">Empresa</strong>
-                        <small class="text-muted">Publicar vagas</small>
+                        <small class="text-muted">Publicar vagas e anunciar imóveis</small>
                     </label>
                 </div>
                 <div class="col-md-4">
                     <input type="radio" class="btn-check" name="tipo_usuario" id="tipoProprietario" value="proprietario">
                     <label class="btn btn-ghost w-100 py-3 text-start" for="tipoProprietario">
+                        <i class="bi bi-house-door d-block fs-5 mb-1"></i>
                         <strong class="d-block">Proprietário</strong>
                         <small class="text-muted">Anunciar imóveis</small>
                     </label>
                 </div>
             </div>
 
-            <h2 class="h6 fw-semibold mb-3">Dados</h2>
+            <h2 class="h6 fw-semibold mb-3"><i class="bi bi-person-vcard text-accent me-2"></i>Dados</h2>
             <div class="row g-3 mb-4">
                 <div class="col-md-8">
                     <label class="form-label">Nome completo *</label>
                     <input type="text" name="nome_completo" class="form-control" placeholder="Seu nome" required minlength="3">
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">CPF / CNPJ</label>
-                    <input type="text" name="cpf" class="form-control" placeholder="000.000.000-00" maxlength="18">
+                    <label class="form-label" id="labelDocumento">CPF</label>
+                    <input type="text" inputmode="numeric" id="campoDocumento" name="cpf" class="form-control" placeholder="000.000.000-00" maxlength="14">
+                    <div class="form-text" id="ajudaDocumento">Opcional para candidatos.</div>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">E-mail *</label>
@@ -53,7 +58,7 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Telefone</label>
-                    <input type="tel" name="telefone" class="form-control" placeholder="(00) 00000-0000" maxlength="15">
+                    <input type="tel" inputmode="numeric" id="campoTelefone" name="telefone" class="form-control" placeholder="(00) 00000-0000" maxlength="15">
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Data de nascimento</label>
@@ -65,7 +70,7 @@
                 </div>
             </div>
 
-            <h2 class="h6 fw-semibold mb-3">Senha</h2>
+            <h2 class="h6 fw-semibold mb-3"><i class="bi bi-lock text-accent me-2"></i>Senha</h2>
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Senha *</label>
@@ -86,7 +91,7 @@
 
             <div class="divider pt-4 d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center gap-2">
                 <a href="{% url 'core:login' %}" class="text-muted small">Já tenho conta</a>
-                <button type="submit" class="btn btn-accent px-4 py-2">Criar conta</button>
+                <button type="submit" class="btn btn-accent px-4 py-2"><i class="bi bi-check2 me-2"></i>Criar conta</button>
             </div>
         </form>
     </div>
@@ -108,6 +113,75 @@ function verPw(id, ic) {
             err.style.display = 'none';
         }
     });
+})();
+
+// Máscaras de CPF/CNPJ e telefone + rótulo dinâmico conforme o tipo de conta
+(() => {
+    const campoDocumento = document.getElementById('campoDocumento');
+    const labelDocumento = document.getElementById('labelDocumento');
+    const ajudaDocumento = document.getElementById('ajudaDocumento');
+    const campoTelefone = document.getElementById('campoTelefone');
+    const radios = document.querySelectorAll('input[name="tipo_usuario"]');
+
+    const digitos = valor => (valor || '').replace(/\D/g, '');
+
+    const mascaraCpf = valor => digitos(valor).slice(0, 11)
+        .replace(/(\d{3})(\d)/, '$1.$2')
+        .replace(/(\d{3})(\d)/, '$1.$2')
+        .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+
+    const mascaraCnpj = valor => digitos(valor).slice(0, 14)
+        .replace(/^(\d{2})(\d)/, '$1.$2')
+        .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+        .replace(/\.(\d{3})(\d)/, '.$1/$2')
+        .replace(/(\d{4})(\d)/, '$1-$2');
+
+    const mascaraTelefone = valor => {
+        const numeros = digitos(valor).slice(0, 11);
+        if (numeros.length <= 10) {
+            return numeros
+                .replace(/^(\d{2})(\d)/, '($1) $2')
+                .replace(/(\d{4})(\d)/, '$1-$2');
+        }
+        return numeros
+            .replace(/^(\d{2})(\d)/, '($1) $2')
+            .replace(/(\d{5})(\d)/, '$1-$2');
+    };
+
+    const ehEmpresa = () => {
+        const marcado = document.querySelector('input[name="tipo_usuario"]:checked');
+        return marcado && marcado.value === 'empresa';
+    };
+
+    function aplicarDocumento() {
+        if (ehEmpresa()) {
+            labelDocumento.textContent = 'CNPJ';
+            campoDocumento.placeholder = '00.000.000/0000-00';
+            campoDocumento.maxLength = 18;
+            campoDocumento.value = mascaraCnpj(campoDocumento.value);
+            ajudaDocumento.textContent = 'Informe o CNPJ da empresa.';
+        } else {
+            labelDocumento.textContent = 'CPF';
+            campoDocumento.placeholder = '000.000.000-00';
+            campoDocumento.maxLength = 14;
+            campoDocumento.value = mascaraCpf(campoDocumento.value);
+            ajudaDocumento.textContent = 'Opcional para candidatos.';
+        }
+    }
+
+    radios.forEach(radio => radio.addEventListener('change', aplicarDocumento));
+
+    campoDocumento.addEventListener('input', () => {
+        campoDocumento.value = ehEmpresa()
+            ? mascaraCnpj(campoDocumento.value)
+            : mascaraCpf(campoDocumento.value);
+    });
+
+    campoTelefone.addEventListener('input', () => {
+        campoTelefone.value = mascaraTelefone(campoTelefone.value);
+    });
+
+    aplicarDocumento();
 })();
 </script>
 {% endblock %}

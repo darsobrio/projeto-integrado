@@ -1,24 +1,51 @@
+import os
 from datetime import datetime
 from types import SimpleNamespace
 
 from django.contrib import messages
+from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.core.files.storage import default_storage
 from django.http import JsonResponse, QueryDict
 from django.shortcuts import redirect, render
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
+from django.utils.http import url_has_allowed_host_and_scheme
 from firebase_admin import auth as firebase_auth
 from firebase_admin.exceptions import InvalidArgumentError
 
 from core import db
+from core.emails import enviar_email
 from core.firebase_auth import (
     autenticar_firebase,
     cadastrar_firebase,
+    gerar_link_redefinicao,
     verificar_token_firebase,
 )
+from core.moderation import (
+    COLECOES_ALVO,
+    MOTIVOS_DENUNCIA,
+    NOMES_ALVO,
+    definir_status_denuncia,
+    definir_status_verificacao,
+    ja_denunciou,
+    listar_denuncias,
+    listar_solicitacoes,
+    registrar_denuncia,
+    registrar_solicitacao_verificacao,
+)
+from core.notificacoes import (
+    marcar_lida,
+    marcar_todas_lidas,
+    notificacoes_do_usuario,
+)
+from core.utils import validar_cpf_cnpj
 from jobs.views import converter_vaga
 from properties.views import converter_imovel
 from users.models import CustomUser
+
+EXTENSOES_DOCUMENTO = {".pdf", ".jpg", ".jpeg", ".png", ".webp"}
+TAMANHO_MAXIMO_DOCUMENTO = 10 * 1024 * 1024
 
 
 def relacionar_candidaturas(candidaturas, vagas, usuarios):
@@ -159,6 +186,10 @@ def register(request):
         return render(request, 'register.html')
 
     cpf = request.POST.get('cpf', '').strip() or None
+
+    if cpf and not validar_cpf_cnpj(cpf):
+        messages.error(request, 'CPF/CNPJ inválido. Confira os números informados.')
+        return render(request, 'register.html')
 
     if cpf and CustomUser.objects.filter(cpf=cpf).exists():
         messages.error(request, 'Este CPF/CNPJ já está cadastrado.')
@@ -334,6 +365,48 @@ def logout_view(request):
     return redirect('core:login')
 
 
+def password_reset(request):
+    """Envia o link de redefinição de senha do Firebase por e-mail.
+
+    Por segurança, a resposta é sempre a mesma — não revelamos se o e-mail
+    informado pertence ou não a uma conta cadastrada.
+    """
+    if request.user.is_authenticated:
+        return redirect('core:dashboard')
+
+    if request.method == 'POST':
+        email = request.POST.get('email', '').strip().lower()
+
+        if not email:
+            messages.error(request, 'Informe o e-mail da sua conta.')
+            return render(request, 'password_reset.html')
+
+        link = gerar_link_redefinicao(email)
+
+        if link:
+            enviar_email(
+                email,
+                'Oportunet — redefinição de senha',
+                (
+                    'Olá!\n\n'
+                    'Recebemos um pedido para redefinir a senha da sua conta '
+                    'no Oportunet.\n\n'
+                    f'Para criar uma nova senha, acesse o link abaixo:\n{link}\n\n'
+                    'Se você não solicitou esta alteração, ignore este e-mail.\n\n'
+                    'Equipe Oportunet'
+                ),
+            )
+
+        messages.success(
+            request,
+            'Se este e-mail estiver cadastrado, enviamos um link para '
+            'redefinir a senha. Confira também a caixa de spam.',
+        )
+        return redirect('core:password_reset')
+
+    return render(request, 'password_reset.html')
+
+
 @login_required
 def dashboard(request):
     usuario = request.user
@@ -416,6 +489,13 @@ def dashboard(request):
         )
         context["candidaturas_recebidas"] = candidaturas_empresa
 
+        meus_imoveis = [
+            imovel for imovel in imoveis
+            if str(getattr(imovel, "proprietario_id", ""))
+            == str(usuario.pk)
+        ]
+        context["imoveis"] = ordenar(meus_imoveis, "criado_em")
+
     elif usuario.tipo_usuario == "proprietario":
         meus_imoveis = [
             imovel for imovel in imoveis
@@ -474,6 +554,13 @@ def dashboard(request):
             if str(vaga.pk) not in ids_candidatados
         ][:4]
 
+        meus_imoveis = [
+            imovel for imovel in imoveis
+            if str(getattr(imovel, "proprietario_id", ""))
+            == str(usuario.pk)
+        ]
+        context["imoveis"] = ordenar(meus_imoveis, "criado_em")
+
     return render(request, "dashboard.html", context)
 
 
@@ -498,3 +585,195 @@ def testar_firebase(request):
 
     except Exception as e:
         return JsonResponse({"status": "erro", "mensagem": str(e)}, status=500)
+
+
+@login_required
+def denunciar(request, tipo, alvo_id):
+    """Permite denunciar um anúncio (vaga ou imóvel) como suspeito."""
+    colecao = COLECOES_ALVO.get(tipo)
+
+    if colecao is None:
+        messages.error(request, "Tipo de anúncio inválido.")
+        return redirect("core:home")
+
+    documento = db.collection(colecao).document(str(alvo_id)).get()
+
+    if not documento.exists:
+        messages.error(request, "Anúncio não encontrado.")
+        return redirect("core:home")
+
+    uid = getattr(request.user, "firebase_uid", None)
+
+    if ja_denunciou(uid, tipo, alvo_id):
+        messages.info(request, "Você já denunciou este anúncio. Obrigado!")
+        return redirect(f"/{colecao}/{alvo_id}/")
+
+    if request.method == "POST":
+        motivo = request.POST.get("motivo", "").strip()
+        detalhes = request.POST.get("detalhes", "").strip()
+
+        if registrar_denuncia(request, tipo, alvo_id, motivo, detalhes):
+            messages.success(
+                request,
+                "Denúncia enviada. Nossa equipe vai analisar o anúncio.",
+            )
+            return redirect(f"/{colecao}/{alvo_id}/")
+
+        messages.error(request, "Selecione um motivo válido para a denúncia.")
+
+    return render(request, "denunciar.html", {
+        "tipo": tipo,
+        "tipo_display": NOMES_ALVO.get(tipo, "Anúncio"),
+        "alvo_id": alvo_id,
+        "motivos": MOTIVOS_DENUNCIA,
+        "url_voltar": f"/{colecao}/{alvo_id}/",
+    })
+
+
+@login_required
+def solicitar_verificacao(request):
+    """Permite que uma empresa peça o selo de verificação.
+
+    A empresa pode anexar um documento (PDF ou imagem) que comprove a
+    atividade, além do CNPJ e de uma mensagem opcional.
+    """
+    if request.method != "POST":
+        return redirect("users:perfil")
+
+    if request.user.tipo_usuario != "empresa":
+        messages.error(
+            request, "Apenas contas de empresa podem solicitar verificação."
+        )
+        return redirect("users:perfil")
+
+    if request.user.verificado:
+        messages.info(request, "Sua empresa já é verificada.")
+        return redirect("users:perfil")
+
+    documento = request.FILES.get("documento")
+    documento_url = None
+
+    if documento:
+        extensao = os.path.splitext(documento.name)[1].lower()
+
+        if extensao not in EXTENSOES_DOCUMENTO:
+            messages.error(
+                request,
+                "Envie o documento em PDF, JPG, PNG ou WEBP.",
+            )
+            return redirect(f"{reverse('users:perfil')}?aba=conta")
+
+        if documento.size > TAMANHO_MAXIMO_DOCUMENTO:
+            messages.error(request, "O documento deve ter no máximo 10 MB.")
+            return redirect(f"{reverse('users:perfil')}?aba=conta")
+
+        caminho = default_storage.save(
+            f"verificacoes/{request.user.pk}/{documento.name}", documento
+        )
+        documento_url = default_storage.url(caminho)
+
+    if registrar_solicitacao_verificacao(
+        request,
+        documento_url=documento_url,
+        cnpj=request.POST.get("cnpj", "").strip() or None,
+        mensagem=request.POST.get("mensagem", ""),
+    ):
+        messages.success(
+            request,
+            "Pedido de verificação enviado. Avisaremos quando for analisado.",
+        )
+    else:
+        messages.info(
+            request, "Você já tem um pedido de verificação em análise."
+        )
+
+    return redirect("users:perfil")
+
+
+@staff_member_required
+def moderacao(request):
+    """Painel de moderação: denúncias e pedidos de verificação."""
+    if request.method == "POST":
+        acao = request.POST.get("acao", "")
+        pk = request.POST.get("pk", "")
+
+        if acao in {"resolver", "descartar"}:
+            definir_status_denuncia(
+                pk, "resolvida" if acao == "resolver" else "descartada"
+            )
+            messages.success(request, "Denúncia atualizada.")
+        elif acao in {"aprovar", "recusar"}:
+            definir_status_verificacao(pk, acao == "aprovar")
+            messages.success(request, "Solicitação de verificação atualizada.")
+
+        return redirect("core:moderacao")
+
+    return render(request, "moderacao.html", {
+        "denuncias": listar_denuncias(),
+        "solicitacoes": listar_solicitacoes(),
+        "metricas": metricas_plataforma(),
+    })
+
+
+def metricas_plataforma():
+    """Números gerais da plataforma para o painel de moderação."""
+    def contar(nome):
+        return sum(1 for _ in db.collection(nome).stream())
+
+    denuncias = db.collection("denuncias").stream()
+    verificacoes = db.collection("verificacoes").stream()
+
+    return {
+        "usuarios": contar("usuarios"),
+        "vagas": contar("vagas"),
+        "imoveis": contar("imoveis"),
+        "candidaturas": contar("candidaturas"),
+        "denuncias_abertas": sum(
+            1
+            for documento in denuncias
+            if (documento.to_dict() or {}).get("status", "aberta") == "aberta"
+        ),
+        "verificacoes_pendentes": sum(
+            1
+            for documento in verificacoes
+            if (documento.to_dict() or {}).get("status", "pendente")
+            == "pendente"
+        ),
+    }
+
+
+@login_required
+def notificacoes_lista(request):
+    """Central de notificações do usuário."""
+    uid = getattr(request.user, "firebase_uid", None)
+    marcar_todas_lidas(uid)
+    return render(request, "notificacoes.html", {
+        "notificacoes": notificacoes_do_usuario(uid),
+    })
+
+
+@login_required
+def notificacao_abrir(request, pk):
+    """Marca a notificação como lida e segue para o link de destino."""
+    uid = getattr(request.user, "firebase_uid", None)
+    marcar_lida(uid, pk)
+
+    documento = db.collection("notificacoes").document(str(pk)).get()
+    dados = documento.to_dict() or {} if documento.exists else {}
+    link = dados.get("link")
+
+    if link and url_has_allowed_host_and_scheme(
+        link, allowed_hosts={request.get_host()}
+    ):
+        return redirect(link)
+
+    return redirect("core:notificacoes")
+
+
+@login_required
+def notificacoes_marcar_lidas(request):
+    """Marca todas as notificações como lidas (POST)."""
+    if request.method == "POST":
+        marcar_todas_lidas(getattr(request.user, "firebase_uid", None))
+
+    return redirect(request.POST.get("next") or "core:notificacoes")

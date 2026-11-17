@@ -4,116 +4,372 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Oportunet{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}Vagas de emprego, estágios e imóveis para alugar em Paulistana - PI. Publicar e buscar é gratuito.{% endblock %}">
+    <meta name="theme-color" content="#157a4a">
+    <meta property="og:site_name" content="Oportunet">
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:title" content="{% block og_title %}Oportunet - vagas e imóveis em Paulistana - PI{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Vagas de emprego, estágios e imóveis para alugar em Paulistana - PI. Publicar e buscar é gratuito.{% endblock %}">
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    <meta name="twitter:card" content="summary">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23157a4a'/%3E%3Ctext x='16' y='23' font-family='Arial,Helvetica,sans-serif' font-size='19' font-weight='bold' fill='%23fff' text-anchor='middle'%3EO%3C/text%3E%3C/svg%3E">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <style>
         :root {
-            --bg: #fafafa;
+            --bg: #f5f5f3;
             --surface: #ffffff;
-            --border: #ebebeb;
-            --border-strong: #dcdcdc;
-            --text: #18181b;
-            --muted: #71717a;
-            --accent: #15803d;
-            --accent-dark: #14532d;
-            --accent-soft: #f0fdf4;
+            --surface-2: #eff0ee;
+            --border: #e4e5e1;
+            --border-strong: #d4d5d0;
+            --text: #1d2128;
+            --muted: #6b7079;
+            --ink: #14171c;
+            --accent: #157a4a;
+            --accent-dark: #0f5a37;
+            --accent-light: #1c9a5e;
+            --accent-soft: #f0f7f3;
+            --accent-border: #cde5da;
             --radius: 14px;
+            --radius-sm: 10px;
+            --shadow-sm: 0 1px 2px rgba(18,20,24,.05);
+            --shadow-md: 0 6px 18px -12px rgba(18,20,24,.22), 0 2px 4px rgba(18,20,24,.04);
+            --shadow-lg: 0 22px 48px -26px rgba(18,20,24,.30);
         }
         * { -webkit-font-smoothing: antialiased; }
+        html { scroll-behavior: smooth; }
+        ::selection { background: #cde5da; color: var(--accent-dark); }
         body {
             background-color: var(--bg);
             color: var(--text);
             font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
             font-size: 0.95rem;
+            line-height: 1.6;
         }
         a { color: inherit; text-decoration: none; }
-        h1, h2, h3, h4, h5 { letter-spacing: -0.02em; font-weight: 600; }
+        h1, h2, h3, h4, h5, .brand, .hero-title, .page-title, .section-title {
+            font-family: 'Space Grotesk', 'Inter', sans-serif;
+            letter-spacing: -0.025em;
+            font-weight: 600;
+            text-wrap: balance;
+        }
         .text-muted { color: var(--muted) !important; }
         .text-accent { color: var(--accent) !important; }
+        :focus-visible { outline: 2px solid rgba(21,122,74,.5); outline-offset: 2px; }
 
         /* ---------- Navegação ---------- */
         .site-nav {
-            background: var(--surface);
+            background: rgba(255,255,255,.9);
+            backdrop-filter: saturate(150%) blur(10px);
+            -webkit-backdrop-filter: saturate(150%) blur(10px);
             border-bottom: 1px solid var(--border);
             position: sticky;
             top: 0;
             z-index: 1030;
         }
-        .brand { font-weight: 700; font-size: 1.15rem; letter-spacing: -0.03em; }
+        .brand { font-weight: 700; font-size: 1.22rem; letter-spacing: -0.035em; color: var(--ink); }
         .brand-dot { color: var(--accent); }
         .nav-min {
             color: var(--muted);
             font-size: 0.9rem;
             font-weight: 500;
-            padding: 0.45rem 0.75rem;
-            border-radius: 9px;
+            padding: 0.5rem 0.8rem;
+            border-radius: 8px;
             transition: color .15s, background-color .15s;
         }
-        .nav-min:hover { color: var(--text); background: #f4f4f5; }
-        .nav-min.active { color: var(--text); background: #f4f4f5; }
+        .nav-min:hover { color: var(--ink); background: var(--surface-2); }
+        .nav-min.active { color: var(--ink); background: var(--surface-2); }
         .navbar-toggler:focus { box-shadow: none; }
+        .site-nav .dropdown-menu { padding: .4rem; }
 
         /* ---------- Botões ---------- */
-        .btn { border-radius: 10px; font-weight: 500; font-size: 0.9rem; }
-        .btn-accent { background: var(--accent); border: 1px solid var(--accent); color: #fff; }
-        .btn-accent:hover { background: var(--accent-dark); border-color: var(--accent-dark); color: #fff; }
-        .btn-ghost { background: var(--surface); border: 1px solid var(--border-strong); color: var(--text); }
-        .btn-ghost:hover { background: #fafafa; border-color: #c9c9c9; color: var(--text); }
-        .btn-soft { background: var(--accent-soft); border: 1px solid transparent; color: var(--accent); }
-        .btn-soft:hover { background: #dcfce7; color: var(--accent-dark); }
-        .btn-check:checked + .btn-ghost { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-dark); }
+        .btn {
+            border-radius: 9px; font-weight: 600; font-size: 0.875rem;
+            letter-spacing: -0.01em;
+            transition: background-color .15s, border-color .15s, color .15s,
+                        box-shadow .2s, transform .12s;
+        }
+        .btn-accent {
+            background: var(--accent);
+            border: 1px solid var(--accent);
+            color: #fff;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 1px 2px rgba(15,90,55,.25);
+        }
+        .btn-accent:hover {
+            background: var(--accent-dark);
+            border-color: var(--accent-dark);
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 10px 22px -12px rgba(15,90,55,.7);
+        }
+        .btn-accent:active { transform: translateY(0); }
+        .btn-ghost {
+            background: var(--surface);
+            border: 1px solid var(--border-strong);
+            color: var(--text);
+            box-shadow: var(--shadow-sm);
+        }
+        .btn-ghost:hover { background: #fbfbfa; border-color: #c3c4bf; color: var(--ink); transform: translateY(-1px); }
+        .btn-soft { background: var(--accent-soft); border: 1px solid var(--accent-border); color: var(--accent-dark); }
+        .btn-soft:hover { background: #e4f1ea; border-color: var(--accent); color: var(--accent-dark); }
+        .btn-check:checked + .btn-ghost {
+            background: var(--accent-soft);
+            border-color: var(--accent);
+            color: var(--accent-dark);
+            box-shadow: 0 0 0 3px rgba(21,122,74,.10);
+        }
 
         /* ---------- Superfícies ---------- */
         .card-min {
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            transition: border-color .15s, box-shadow .15s, transform .15s;
+            box-shadow: var(--shadow-sm);
+            transition: border-color .18s, box-shadow .22s, transform .18s;
         }
-        .card-min:hover { border-color: var(--border-strong); box-shadow: 0 6px 20px rgba(0,0,0,.045); }
-        .card-flat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+        .card-min:hover {
+            border-color: var(--accent-border);
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-3px);
+        }
+        .card-flat {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+        }
+        .card-quiet { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); }
+
+        /* ---------- Monograma (avatar de empresa/imóvel) ---------- */
+        .avatar {
+            width: 44px; height: 44px; flex: 0 0 44px;
+            display: inline-flex; align-items: center; justify-content: center;
+            border-radius: 10px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600; font-size: .95rem; letter-spacing: -.02em;
+            text-transform: uppercase;
+            color: #fff;
+            background: var(--accent);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.2);
+        }
+        .avatar-lg { width: 58px; height: 58px; flex-basis: 58px; font-size: 1.25rem; border-radius: 14px; }
+        .avatar-soft { background: var(--accent-soft); color: var(--accent-dark); box-shadow: none; border: 1px solid var(--accent-border); }
+
+        /* ---------- Linha de lista (com destaque na borda) ---------- */
+        .list-row {
+            position: relative;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            transition: border-color .18s, box-shadow .22s, transform .18s;
+        }
+        .list-row:hover { border-color: var(--accent-border); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+        .list-row::before {
+            content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+            background: var(--accent); transform: scaleY(0); transform-origin: center;
+            transition: transform .22s ease;
+        }
+        .list-row:hover::before { transform: scaleY(1); }
+
+        /* Ícone em quadrado suave */
+        .icon-square {
+            width: 44px; height: 44px; flex: 0 0 44px;
+            display: inline-flex; align-items: center; justify-content: center;
+            border-radius: 11px;
+            font-size: 1.1rem;
+            color: var(--accent-dark);
+            background: var(--accent-soft);
+            border: 1px solid var(--accent-border);
+        }
+        .icon-square-lg { width: 52px; height: 52px; flex-basis: 52px; font-size: 1.3rem; border-radius: 13px; }
+
+        /* Capa dos cards de imóvel */
+        .card-cover {
+            position: relative;
+            height: 150px;
+            display: flex; align-items: center; justify-content: center;
+            color: rgba(255,255,255,.9);
+            font-size: 1.8rem;
+            border-radius: var(--radius) var(--radius) 0 0;
+            overflow: hidden;
+            background: #123f2a;
+        }
+        .card-cover::after {
+            content: "";
+            position: absolute; inset: 0;
+            background-image: radial-gradient(rgba(255,255,255,.13) 1px, transparent 1.4px);
+            background-size: 15px 15px;
+            opacity: .55;
+        }
+        .card-cover > * { position: relative; z-index: 1; }
+        .card-cover--photo::after { opacity: 0; }
+        .card-cover--photo::before {
+            content: ""; position: absolute; inset: 0; z-index: 0;
+            background: linear-gradient(180deg, rgba(10,18,14,.02) 45%, rgba(10,18,14,.55) 100%);
+        }
+        .card-cover-price {
+            position: absolute; left: 14px; bottom: 12px; z-index: 1;
+            background: rgba(255,255,255,.96);
+            color: var(--ink);
+            font-size: .82rem; font-weight: 600;
+            padding: .32rem .7rem; border-radius: 999px;
+            box-shadow: 0 1px 2px rgba(18,20,24,.18);
+        }
 
         /* ---------- Chips / badges ---------- */
         .chip {
             display: inline-flex; align-items: center; gap: .35rem;
-            font-size: .76rem; font-weight: 500;
+            font-size: .75rem; font-weight: 500;
             padding: .28rem .65rem; border-radius: 999px;
-            background: #f4f4f5; color: #52525b; border: 1px solid var(--border);
+            background: var(--surface-2); color: #565b62; border: 1px solid var(--border);
             white-space: nowrap;
         }
-        .chip-accent { background: var(--accent-soft); color: var(--accent); border-color: #dcfce7; }
-        .chip-muted { background: #f4f4f5; color: var(--muted); }
+        .chip-accent { background: var(--accent-soft); color: var(--accent-dark); border-color: var(--accent-border); }
+        .chip-muted { background: var(--surface-2); color: var(--muted); }
+        .chip-info { background: #eef4ff; color: #1e40af; border-color: #dbe6fe; }
+        .chip-ok { background: var(--accent-soft); color: var(--accent-dark); border-color: var(--accent-border); }
+        .chip-warn { background: #fef7e7; color: #8a5a12; border-color: #f6e2b8; }
+        .chip-danger { background: #fdf1f1; color: #9a2b2b; border-color: #f6cfcf; }
 
         /* ---------- Tipografia de seção ---------- */
-        .section { padding: 3.25rem 0; }
+        .section { padding: 3.5rem 0; }
         .eyebrow {
-            font-size: .74rem; text-transform: uppercase; letter-spacing: .09em;
+            display: inline-flex; align-items: center; gap: .5rem;
+            font-size: .72rem; text-transform: uppercase; letter-spacing: .12em;
             font-weight: 600; color: var(--muted);
         }
-        .section-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 0; }
-        .page-title { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.03em; }
-        .lead-min { color: var(--muted); font-size: 1rem; line-height: 1.6; }
+        .eyebrow::before {
+            content: ""; width: 18px; height: 1px; background: var(--accent); display: inline-block;
+        }
+        .section-title { font-size: 1.3rem; font-weight: 600; margin-bottom: 0; }
+        .page-title { font-size: clamp(1.35rem, 4.6vw, 1.85rem); font-weight: 700; letter-spacing: -0.03em; }
+        .lead-min { color: var(--muted); font-size: 1rem; line-height: 1.65; }
         .divider { border-top: 1px solid var(--border); }
 
+        /* ---------- Faixa de topo das listagens ---------- */
+        .page-band {
+            padding: 2.5rem 0 1.75rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface);
+        }
+
+        /* ---------- Hero ---------- */
+        .hero { position: relative; padding: 4.5rem 0 3.25rem; overflow: hidden; }
+        .hero::before {
+            content: "";
+            position: absolute; inset: 0;
+            background-image:
+                linear-gradient(var(--border) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 44px 44px;
+            -webkit-mask-image: radial-gradient(620px 320px at 22% 4%, #000, transparent 78%);
+            mask-image: radial-gradient(620px 320px at 22% 4%, #000, transparent 78%);
+            opacity: .7;
+            pointer-events: none;
+        }
+        .hero > * { position: relative; }
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: .45rem;
+            background: var(--surface);
+            border: 1px solid var(--border-strong);
+            color: var(--text);
+            font-size: .78rem; font-weight: 500;
+            padding: .38rem .8rem; border-radius: 999px;
+            box-shadow: var(--shadow-sm);
+        }
+        .hero-badge i { color: var(--accent); }
+        .hero-title { font-size: clamp(2.1rem, 4.4vw, 3.15rem); font-weight: 700; letter-spacing: -0.035em; line-height: 1.06; }
+        .hero-highlight {
+            color: var(--accent-dark);
+            background: linear-gradient(180deg, transparent 64%, var(--accent-border) 64%);
+            padding: 0 .1em;
+        }
+
+        /* ---------- Estatísticas ---------- */
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-sm);
+            padding: .95rem 1.05rem;
+            height: 100%;
+            display: flex; align-items: center; gap: .85rem;
+            transition: border-color .18s, box-shadow .22s, transform .18s;
+        }
+        .stat-card:hover { border-color: var(--accent-border); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+        .stat-value { font-family: 'Space Grotesk', 'Inter', sans-serif; font-size: 1.45rem; font-weight: 700; line-height: 1.1; letter-spacing: -0.03em; color: var(--ink); }
+        .stat-label { font-size: .79rem; color: var(--muted); }
+
+        /* ---------- Passos ---------- */
+        .step-card {
+            height: 100%;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+            padding: 1.6rem;
+            transition: border-color .18s, box-shadow .22s, transform .18s;
+        }
+        .step-card:hover { border-color: var(--accent-border); box-shadow: var(--shadow-md); transform: translateY(-3px); }
+        .step-num {
+            width: 32px; height: 32px; border-radius: 9px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: var(--accent-soft); border: 1px solid var(--accent-border);
+            color: var(--accent-dark); font-weight: 700; font-size: .82rem;
+            font-family: 'Space Grotesk', sans-serif;
+            margin-bottom: 1rem;
+        }
+
+        /* ---------- Faixa de chamada ---------- */
+        .cta-band {
+            position: relative;
+            overflow: hidden;
+            border-radius: var(--radius);
+            background: #0f3b27;
+            color: #fff;
+            padding: 3rem;
+            box-shadow: var(--shadow-lg);
+        }
+        .cta-band::after {
+            content: "";
+            position: absolute; inset: 0;
+            background-image: radial-gradient(rgba(255,255,255,.10) 1px, transparent 1.4px);
+            background-size: 16px 16px;
+            opacity: .5;
+        }
+        .cta-band > * { position: relative; z-index: 1; }
+        .cta-band .lead-min { color: rgba(255,255,255,.78); }
+        .btn-on-dark { background: #fff; border: 1px solid transparent; color: var(--accent-dark); }
+        .btn-on-dark:hover { background: #f2f2ef; color: var(--accent-dark); transform: translateY(-1px); }
+        .btn-outline-dark-soft { background: transparent; border: 1px solid rgba(255,255,255,.4); color: #fff; }
+        .btn-outline-dark-soft:hover { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.72); color: #fff; }
+
         /* ---------- Formulários ---------- */
-        .form-label { font-weight: 500; font-size: .875rem; color: #3f3f46; }
+        .form-label { font-weight: 500; font-size: .875rem; color: var(--ink); }
         .form-control, .form-select {
             border: 1px solid var(--border-strong);
-            border-radius: 10px;
+            border-radius: 9px;
             padding: .6rem .8rem;
             font-size: .9rem;
+            background-color: var(--surface);
+            transition: border-color .15s, box-shadow .15s;
         }
         .form-control:focus, .form-select:focus {
             border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(21,128,61,.10);
+            box-shadow: 0 0 0 3px rgba(21,122,74,.12);
         }
-        .form-control::placeholder { color: #b4b4bb; }
+        .form-control::placeholder { color: #a9aab0; }
         .form-check-input:checked { background-color: var(--accent); border-color: var(--accent); }
+        .form-check-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(21,122,74,.12); }
         .form-text { color: var(--muted); }
         .input-hint { font-size: .8rem; color: var(--muted); }
+        .input-group > .btn { box-shadow: none; }
+        .input-group > .btn:hover { transform: none; }
 
         /* ---------- Estado vazio ---------- */
         .empty-state {
@@ -123,52 +379,225 @@
             text-align: center;
             background: var(--surface);
         }
-        .empty-state i { font-size: 1.8rem; color: #a1a1aa; }
+        .empty-state i {
+            width: 56px; height: 56px; line-height: 56px;
+            margin: 0 auto 1rem !important;
+            font-size: 1.5rem; color: var(--accent-dark);
+            background: var(--accent-soft); border: 1px solid var(--accent-border);
+            border-radius: 16px;
+        }
 
         /* ---------- Alertas ---------- */
-        .alert { border: 1px solid var(--border); border-radius: 12px; font-size: .9rem; }
-        .alert-success { background: var(--accent-soft); color: var(--accent-dark); border-color: #dcfce7; }
+        .alert { border: 1px solid var(--border); border-radius: 11px; font-size: .9rem; box-shadow: var(--shadow-sm); }
+        .alert-success { background: var(--accent-soft); color: var(--accent-dark); border-color: var(--accent-border); }
         .alert-danger,
-        .alert-error { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
-        .alert-info { background: #eff6ff; color: #1e40af; border-color: #dbeafe; }
-        .alert-warning { background: #fffbeb; color: #92400e; border-color: #fde68a; }
+        .alert-error { background: #fdf1f1; color: #9a2b2b; border-color: #f6cfcf; }
+        .alert-info { background: #eef4ff; color: #1e40af; border-color: #dbe6fe; }
+        .alert-warning { background: #fef7e7; color: #8a5a12; border-color: #f6e2b8; }
 
         /* ---------- Rodapé ---------- */
         .site-footer {
             border-top: 1px solid var(--border);
             background: var(--surface);
-            padding: 2rem 0;
+            padding: 2.75rem 0 1.75rem;
             margin-top: auto;
             color: var(--muted);
             font-size: .875rem;
         }
+        .footer-title { font-size: .78rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 600; margin-bottom: .85rem; }
+        .footer-links { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem; }
+        .footer-links a { color: var(--text); transition: color .15s; }
+        .footer-links a:hover { color: var(--accent); }
+
+        /* ---------- Proteções de layout ---------- */
+        .card-min, .card-flat, .list-row, .stat-card, .step-card { min-width: 0; }
+        .chip { max-width: 100%; }
+        /* chip com texto longo (e-mail, endereço): corta em vez de estourar a tela */
+        .chip-clip {
+            display: inline-block; max-width: 100%;
+            overflow: hidden; text-overflow: ellipsis; vertical-align: middle;
+        }
+        img { max-width: 100%; }
+
+        /* ---------- Link de pular para o conteúdo (acessibilidade) ---------- */
+        .skip-link {
+            position: absolute; left: -9999px; top: 0; z-index: 2000;
+            background: var(--accent); color: #fff; padding: .6rem 1rem;
+            border-radius: 0 0 var(--radius-sm) 0; font-weight: 600; font-size: .9rem;
+        }
+        .skip-link:focus { left: 0; color: #fff; }
+
+        /* ---------- Menu: item da página atual ---------- */
+        .site-nav .nav-link.active {
+            color: var(--accent-dark);
+            background: var(--accent-soft);
+            box-shadow: inset 0 0 0 1px var(--accent-border);
+        }
+
+        /* ---------- Chips de filtros aplicados ---------- */
+        .chip-filtro {
+            background: var(--surface);
+            border-color: var(--accent-border);
+            color: var(--accent-dark);
+            text-decoration: none;
+            transition: background .18s ease, border-color .18s ease;
+        }
+        .chip-filtro:hover { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-dark); }
+        .chip-filtro i { font-size: .75rem; opacity: .75; }
+
+        /* ---------- Voltar ao topo ---------- */
+        .btn-voltar-topo {
+            position: fixed; right: 1rem; bottom: 1rem; z-index: 1030;
+            width: 44px; height: 44px; border-radius: 12px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: var(--surface); color: var(--ink); font-size: 1.1rem;
+            border: 1px solid var(--border-strong); box-shadow: var(--shadow-md);
+            opacity: 0; visibility: hidden; transform: translateY(10px);
+            transition: opacity .2s ease, transform .2s ease, visibility .2s;
+        }
+        .btn-voltar-topo.mostrar { opacity: 1; visibility: visible; transform: none; }
+        .btn-voltar-topo:hover { background: var(--accent-soft); color: var(--accent-dark); border-color: var(--accent-border); }
+
+        /* ---------- Barra de ação fixa no celular (detalhes) ---------- */
+        .barra-fixa {
+            position: fixed; left: 0; right: 0; bottom: 0; z-index: 1035;
+            background: var(--surface); border-top: 1px solid var(--border);
+            padding: .6rem .85rem calc(.6rem + env(safe-area-inset-bottom));
+            box-shadow: 0 -8px 24px -18px rgba(18,20,24,.45);
+        }
+        .tem-barra-fixa { padding-bottom: 5.5rem; }
+        @media (min-width: 992px) {
+            .barra-fixa, .tem-barra-fixa { display: none !important; }
+        }
+
+        /* ---------- Cards de itens relacionados ---------- */
+        .card-relacionado {
+            display: flex; flex-direction: column; height: 100%;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 1rem;
+            box-shadow: var(--shadow-sm); color: inherit; text-decoration: none;
+            transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+        }
+        .card-relacionado:hover {
+            border-color: var(--accent-border); box-shadow: var(--shadow-md);
+            transform: translateY(-2px); color: inherit;
+        }
+
+        /* ---------- Telas médias (tablet) ---------- */
+        @media (max-width: 991.98px) {
+            .section { padding: 2.5rem 0; }
+            .page-band { padding: 2rem 0 1.4rem; }
+            .hero { padding: 3rem 0 2.25rem; }
+
+            /* menu do topo: rola por dentro e vira lista de toque */
+            .site-nav .navbar-collapse {
+                max-height: calc(100vh - 4.5rem);
+                max-height: calc(100dvh - 4.5rem);
+                overflow-y: auto;
+                overscroll-behavior: contain;
+                padding-bottom: .6rem;
+            }
+            .site-nav .navbar-nav .nav-link.nav-min { padding: .7rem .85rem; }
+            .site-nav .navbar-nav .btn { width: 100%; justify-content: center; }
+            .site-nav .navbar-nav .dropdown-toggle { text-align: left; }
+            .site-nav .dropdown-menu {
+                min-width: 0 !important;
+                width: 100%;
+                max-width: 100%;
+                border: 1px solid var(--border) !important;
+                box-shadow: none !important;
+            }
+        }
+
+        /* ---------- Telas pequenas (celular) ---------- */
+        @media (max-width: 575.98px) {
+            body { font-size: .93rem; }
+            .section { padding: 1.9rem 0; }
+            .hero { padding: 2.25rem 0 1.75rem; }
+            .hero-title { font-size: 1.75rem; }
+            .section-title { font-size: 1.15rem; }
+            .lead-min { font-size: .95rem; }
+            .cta-band { padding: 1.6rem 1.25rem; }
+            .step-card { padding: 1.25rem; }
+            .avatar, .icon-square { width: 40px; height: 40px; flex-basis: 40px; font-size: .95rem; }
+            .avatar-lg, .icon-square-lg { width: 52px; height: 52px; flex-basis: 52px; font-size: 1.15rem; }
+            .stat-card { padding: .8rem .85rem; gap: .7rem; }
+            .stat-value { font-size: 1.25rem; }
+            .empty-state { padding: 2.2rem 1.1rem; }
+            /* botões que ficam melhores ocupando a linha inteira no celular */
+            .btn-mob-full { width: 100%; }
+        }
+
         @media (min-width: 992px) { .w-lg-auto { width: auto !important; } }
+
+        /* ---------- Animação de entrada ---------- */
+        .fade-up { opacity: 0; transform: translateY(14px); transition: opacity .5s ease, transform .5s ease; }
+        .fade-up.is-visible { opacity: 1; transform: none; }
+
+        @media (prefers-reduced-motion: reduce) {
+            * { transition: none !important; }
+            html { scroll-behavior: auto; }
+            .card-min:hover, .step-card:hover, .stat-card:hover, .btn:hover { transform: none; }
+            .fade-up { opacity: 1 !important; transform: none !important; }
+        }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
 <body class="d-flex flex-column min-vh-100">
+    <a href="#conteudo" class="skip-link">Pular para o conteúdo</a>
     <nav class="navbar navbar-expand-lg site-nav py-0">
         <div class="container py-2">
             <a class="navbar-brand brand" href="{% url 'core:home' %}">Oportunet<span class="brand-dot">.</span></a>
-            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMain" aria-label="Menu">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+            <div class="d-flex align-items-center gap-1 ms-auto d-lg-none">
+                {% if user.is_authenticated %}
+                    <a class="nav-link nav-min position-relative px-2" href="{% url 'core:notificacoes' %}" aria-label="Notificações">
+                        <i class="bi bi-bell fs-5"></i>
+                        {% if nao_lidas %}<span class="position-absolute badge rounded-pill bg-danger" style="top:-2px;right:0;font-size:.6rem;">{{ nao_lidas }}</span>{% endif %}
+                    </a>
+                {% endif %}
+                <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMain" aria-label="Menu">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+            </div>
             <div class="collapse navbar-collapse" id="navMain">
                 <ul class="navbar-nav mx-lg-auto my-2 my-lg-0 gap-lg-1">
-                    <li class="nav-item"><a class="nav-link nav-min" href="{% url 'core:home' %}">Início</a></li>
-                    <li class="nav-item"><a class="nav-link nav-min" href="{% url 'jobs:list' %}">Vagas</a></li>
-                    <li class="nav-item"><a class="nav-link nav-min" href="{% url 'properties:list' %}">Imóveis</a></li>
+                    <li class="nav-item"><a class="nav-link nav-min {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'core:home' %}">Início</a></li>
+                    <li class="nav-item"><a class="nav-link nav-min {% if request.resolver_match.namespace == 'jobs' %}active{% endif %}" href="{% url 'jobs:list' %}">Vagas</a></li>
+                    <li class="nav-item"><a class="nav-link nav-min {% if request.resolver_match.namespace == 'properties' %}active{% endif %}" href="{% url 'properties:list' %}">Imóveis</a></li>
                     {% if user.is_authenticated %}
-                        <li class="nav-item"><a class="nav-link nav-min" href="{% url 'core:dashboard' %}">Painel</a></li>
+                        <li class="nav-item"><a class="nav-link nav-min {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'core:dashboard' %}">Painel</a></li>
                     {% endif %}
                 </ul>
                 <ul class="navbar-nav align-items-lg-center gap-2">
                     {% if user.is_authenticated %}
                         {% if user.tipo_usuario == 'empresa' %}
                             <li class="nav-item"><a class="btn btn-soft btn-sm px-3" href="{% url 'jobs:create' %}"><i class="bi bi-plus-lg me-1"></i>Publicar vaga</a></li>
-                        {% elif user.tipo_usuario == 'proprietario' %}
+                        {% else %}
                             <li class="nav-item"><a class="btn btn-soft btn-sm px-3" href="{% url 'properties:create' %}"><i class="bi bi-plus-lg me-1"></i>Anunciar imóvel</a></li>
                         {% endif %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link nav-min position-relative dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-label="Notificações">
+                                <i class="bi bi-bell fs-5"></i>
+                                {% if nao_lidas %}<span class="position-absolute badge rounded-pill bg-danger" style="top:-2px;right:-4px;font-size:.6rem;">{{ nao_lidas }}</span>{% endif %}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" style="border-radius:12px;min-width:20rem;">
+                                <li class="d-flex justify-content-between align-items-center px-3 py-1">
+                                    <span class="fw-semibold small">Notificações</span>
+                                    <a href="{% url 'core:notificacoes' %}" class="small">Ver todas</a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                {% for n in ultimas_notificacoes %}
+                                    <li>
+                                        <a class="dropdown-item small text-wrap {% if not n.lida %}fw-medium{% endif %}" href="{% url 'core:notificacao_abrir' n.pk %}">
+                                            <i class="bi {% if n.lida %}bi-circle{% else %}bi-circle-fill text-accent{% endif %} me-2" style="font-size:.5rem;vertical-align:middle;"></i>{{ n.titulo }}
+                                            <div class="text-muted fw-normal">{{ n.mensagem|truncatewords:12 }}</div>
+                                        </a>
+                                    </li>
+                                {% empty %}
+                                    <li><span class="dropdown-item small text-muted">Nenhuma notificação por aqui.</span></li>
+                                {% endfor %}
+                            </ul>
+                        </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link nav-min dropdown-toggle" href="#" data-bs-toggle="dropdown">
                                 <i class="bi bi-person-circle me-1"></i>{{ user.nome_completo|default:user.email|truncatewords:2 }}
@@ -176,6 +605,7 @@
                             <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" style="border-radius:12px;">
                                 <li><a class="dropdown-item small" href="{% url 'users:perfil' %}"><i class="bi bi-person me-2"></i>Meu perfil</a></li>
                                 <li><a class="dropdown-item small" href="{% url 'core:dashboard' %}"><i class="bi bi-grid me-2"></i>Meu painel</a></li>
+                                <li><a class="dropdown-item small" href="{% url 'properties:favoritos' %}"><i class="bi bi-house-heart me-2"></i>Imóveis salvos</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item small text-danger" href="{% url 'core:logout' %}"><i class="bi bi-box-arrow-right me-2"></i>Sair</a></li>
                             </ul>
@@ -189,7 +619,7 @@
         </div>
     </nav>
 
-    <main class="flex-shrink-0">
+    <main id="conteudo" class="flex-shrink-0">
         {% if messages %}
             <div class="container pt-3">
                 {% for message in messages %}
@@ -205,20 +635,82 @@
     </main>
 
     <footer class="site-footer">
-        <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
-            <div>
-                <span class="brand text-dark">Oportunet<span class="brand-dot">.</span></span>
-                <span class="ms-2">Vagas e imóveis para a comunidade de Paulistana - PI.</span>
+        <div class="container">
+            <div class="row g-4 pb-4">
+                <div class="col-lg-5">
+                    <span class="brand text-dark">Oportunet<span class="brand-dot">.</span></span>
+                    <p class="mt-2 mb-0" style="max-width: 26rem;">
+                        Vagas e imóveis para a comunidade de Paulistana - PI.
+                        Publicar e buscar é gratuito.
+                    </p>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <h3 class="footer-title">Navegar</h3>
+                    <ul class="footer-links">
+                        <li><a href="{% url 'core:home' %}">Início</a></li>
+                        <li><a href="{% url 'jobs:list' %}">Vagas</a></li>
+                        <li><a href="{% url 'properties:list' %}">Imóveis</a></li>
+                    </ul>
+                </div>
+                <div class="col-6 col-lg-4">
+                    <h3 class="footer-title">Conta</h3>
+                    <ul class="footer-links">
+                        {% if user.is_authenticated %}
+                            <li><a href="{% url 'core:dashboard' %}">Meu painel</a></li>
+                            <li><a href="{% url 'users:perfil' %}">Meu perfil</a></li>
+                        {% else %}
+                            <li><a href="{% url 'core:login' %}">Entrar</a></li>
+                            <li><a href="{% url 'core:register' %}">Criar conta</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
             </div>
-            <div class="d-flex gap-4">
-                <a href="{% url 'jobs:list' %}" class="text-muted">Vagas</a>
-                <a href="{% url 'properties:list' %}" class="text-muted">Imóveis</a>
+            <div class="divider d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2 pt-3">
+                <small>&copy; {% now "Y" %} Oportunet</small>
+                <small>Feito para a comunidade de Paulistana - PI.</small>
             </div>
-            <small>&copy; {% now "Y" %} Oportunet</small>
         </div>
     </footer>
 
+    <button type="button" class="btn-voltar-topo" id="btnVoltarTopo" aria-label="Voltar ao topo" title="Voltar ao topo">
+        <i class="bi bi-arrow-up"></i>
+    </button>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function () {
+            var alvos = document.querySelectorAll('.fade-up');
+            if (alvos.length) {
+                if (!('IntersectionObserver' in window)) {
+                    alvos.forEach(function (el) { el.classList.add('is-visible'); });
+                } else {
+                    var observador = new IntersectionObserver(function (entradas) {
+                        entradas.forEach(function (entrada) {
+                            if (entrada.isIntersecting) {
+                                entrada.target.classList.add('is-visible');
+                                observador.unobserve(entrada.target);
+                            }
+                        });
+                    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+                    alvos.forEach(function (el) { observador.observe(el); });
+                }
+            }
+
+            var btnTopo = document.getElementById('btnVoltarTopo');
+            if (btnTopo) {
+                var alternarTopo = function () {
+                    btnTopo.classList.toggle('mostrar', window.scrollY > 420);
+                };
+                window.addEventListener('scroll', alternarTopo, { passive: true });
+                alternarTopo();
+
+                btnTopo.addEventListener('click', function () {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+            }
+        })();
+    </script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

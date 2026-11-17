@@ -1,21 +1,22 @@
 {% extends 'base.html' %}
+{% load querystring %}
 {% block title %}Vagas de Emprego - Oportunet{% endblock %}
 
 {% block content %}
-<section class="section pb-0">
+<section class="page-band">
     <div class="container">
         <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
             <div>
                 <span class="eyebrow">Empregos</span>
                 <h1 class="page-title mt-2 mb-1">Vagas de emprego e estágio</h1>
-                <p class="text-muted mb-0">{{ vagas|length }} vaga{{ vagas|length|pluralize }} encontrada{{ vagas|length|pluralize }}</p>
+                <p class="text-muted mb-0">{{ paginacao.total_itens }} vaga{{ paginacao.total_itens|pluralize }} encontrada{{ paginacao.total_itens|pluralize }}</p>
             </div>
             {% if user.is_authenticated and user.tipo_usuario == 'empresa' %}
                 <a href="{% url 'jobs:create' %}" class="btn btn-accent"><i class="bi bi-plus-lg me-1"></i>Publicar vaga</a>
             {% endif %}
         </div>
 
-        <form method="GET" class="card-flat p-3 p-md-4 mb-4">
+        <form method="GET" class="card-flat p-3 p-md-4">
             <div class="row g-3 align-items-end">
                 <div class="col-md-6">
                     <label class="form-label">Palavra-chave</label>
@@ -51,30 +52,56 @@
                     <label class="form-label">Salário máx. (R$)</label>
                     <input type="text" name="salario_max" value="{{ filtro_salario_max }}" class="form-control" placeholder="10000">
                 </div>
+                <div class="col-6 col-lg-2">
+                    <label class="form-label">Ordenar por</label>
+                    <select name="ordem" class="form-select">
+                        {% for valor, rotulo in ordenacao_choices %}
+                            <option value="{{ valor }}" {% if filtro_ordem == valor %}selected{% endif %}>{{ rotulo }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
                 <div class="col-lg-2 d-grid">
                     <button class="btn btn-accent py-2" type="submit"><i class="bi bi-search me-1"></i>Buscar</button>
                 </div>
             </div>
             {% if filtro_q or filtro_local or filtro_tipo_contrato or filtro_modalidade or filtro_salario_min or filtro_salario_max %}
-                <a href="{% url 'jobs:list' %}" class="small text-muted d-inline-block mt-3"><i class="bi bi-x-circle me-1"></i>Limpar filtros</a>
+                <div class="d-flex flex-wrap align-items-center gap-2 mt-3">
+                    <span class="text-muted small me-1"><i class="bi bi-funnel me-1"></i>Filtros aplicados:</span>
+                    {% if filtro_q %}<a href="?{% querystring q=None %}" class="chip chip-filtro" title="Remover busca"><span class="chip-clip">Busca: {{ filtro_q }}</span> <i class="bi bi-x-lg"></i></a>{% endif %}
+                    {% if filtro_local %}<a href="?{% querystring local=None %}" class="chip chip-filtro" title="Remover local"><span class="chip-clip">Local: {{ filtro_local }}</span> <i class="bi bi-x-lg"></i></a>{% endif %}
+                    {% for valor, rotulo in tipo_contrato_choices %}{% if valor == filtro_tipo_contrato %}<a href="?{% querystring tipo_contrato=None %}" class="chip chip-filtro" title="Remover tipo de contrato">Contrato: {{ rotulo }} <i class="bi bi-x-lg"></i></a>{% endif %}{% endfor %}
+                    {% for valor, rotulo in modalidade_choices %}{% if valor == filtro_modalidade %}<a href="?{% querystring modalidade=None %}" class="chip chip-filtro" title="Remover modalidade">Modalidade: {{ rotulo }} <i class="bi bi-x-lg"></i></a>{% endif %}{% endfor %}
+                    {% if filtro_salario_min %}<a href="?{% querystring salario_min=None %}" class="chip chip-filtro" title="Remover salário mínimo">Mín. R$ {{ filtro_salario_min }} <i class="bi bi-x-lg"></i></a>{% endif %}
+                    {% if filtro_salario_max %}<a href="?{% querystring salario_max=None %}" class="chip chip-filtro" title="Remover salário máximo">Máx. R$ {{ filtro_salario_max }} <i class="bi bi-x-lg"></i></a>{% endif %}
+                    <a href="{% url 'jobs:list' %}" class="small text-muted ms-1">Limpar tudo</a>
+                </div>
             {% endif %}
         </form>
+    </div>
+</section>
 
+<section class="section pt-4 pb-5">
+    <div class="container">
         <div class="d-flex flex-column gap-3">
             {% for vaga in vagas %}
-            <div class="card-min p-4">
+            <div class="list-row p-3 p-md-4 fade-up">
                 <div class="row g-3 align-items-center">
                     <div class="col-lg-8">
-                        <div class="d-flex align-items-center gap-2 mb-2">
-                            <h2 class="h6 fw-semibold mb-0">{{ vaga.funcao }}</h2>
-                            <span class="chip chip-accent">{{ vaga.status_display }}</span>
-                        </div>
-                        <p class="text-muted small mb-1"><i class="bi bi-building me-1"></i>{{ vaga.nome_empresa }}</p>
-                        <p class="text-muted small mb-3"><i class="bi bi-geo-alt me-1"></i>{{ vaga.endereco|default:"Paulistana - PI" }}</p>
-                        <div class="d-flex flex-wrap gap-2">
-                            <span class="chip chip-muted">{{ vaga.tipo_contrato_display }}</span>
-                            <span class="chip chip-muted">{{ vaga.modalidade_display }}</span>
-                            <span class="chip chip-muted">{{ vaga.qtd_vagas }} vaga{{ vaga.qtd_vagas|pluralize }}</span>
+                        <div class="d-flex align-items-start gap-3">
+                            <span class="avatar">{{ vaga.nome_empresa|slice:":1" }}</span>
+                            <div>
+                                <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                                    <h2 class="h6 fw-semibold mb-0">{{ vaga.funcao }}</h2>
+                                    <span class="chip chip-ok">{{ vaga.status_display }}</span>
+                                </div>
+                                <p class="text-muted small mb-1"><i class="bi bi-building me-1"></i>{{ vaga.nome_empresa }}</p>
+                                <p class="text-muted small mb-3"><i class="bi bi-geo-alt me-1"></i>{{ vaga.endereco|default:"Paulistana - PI" }}</p>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <span class="chip chip-muted">{{ vaga.tipo_contrato_display }}</span>
+                                    <span class="chip chip-muted">{{ vaga.modalidade_display }}</span>
+                                    <span class="chip chip-muted">{{ vaga.qtd_vagas }} vaga{{ vaga.qtd_vagas|pluralize }}</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="col-lg-4 d-flex flex-column align-items-lg-end gap-3">
@@ -82,7 +109,18 @@
                             <div class="fs-5 fw-semibold">{% if vaga.salario_display %}R$ {{ vaga.salario_display }}{% else %}A combinar{% endif %}</div>
                             {% if vaga.salario_display %}<small class="text-muted">por mês</small>{% endif %}
                         </div>
-                        <a href="{% url 'jobs:detail' vaga.pk %}" class="btn btn-ghost px-4 w-100 w-lg-auto">Ver detalhes</a>
+                        <div class="d-flex gap-2 w-100 justify-content-lg-end">
+                            {% if user.is_authenticated and user.tipo_usuario == 'candidato' %}
+                            <form method="POST" action="{% url 'jobs:favoritar' vaga.pk %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                <button type="submit" class="btn btn-ghost px-3" title="{% if vaga.pk in favoritos %}Remover dos favoritos{% else %}Salvar nos favoritos{% endif %}">
+                                    <i class="bi {% if vaga.pk in favoritos %}bi-heart-fill text-accent{% else %}bi-heart{% endif %}"></i>
+                                </button>
+                            </form>
+                            {% endif %}
+                            <a href="{% url 'jobs:detail' vaga.pk %}" class="btn btn-accent px-4 flex-grow-1">Ver detalhes</a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -94,6 +132,7 @@
             </div>
             {% endfor %}
         </div>
+        {% include '_paginacao.html' %}
     </div>
 </section>
 {% endblock %}

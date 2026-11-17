@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% block title %}Minhas candidaturas - Oportunet{% endblock %}
+
+{% block content %}
+<section class="page-band">
+    <div class="container">
+        <span class="eyebrow">Painel do candidato</span>
+        <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mt-2">
+            <div>
+                <h1 class="page-title mb-1">Minhas candidaturas</h1>
+                <p class="text-muted mb-0">Acompanhe o andamento de cada candidatura que você enviou.</p>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{% url 'jobs:favoritos' %}" class="btn btn-ghost"><i class="bi bi-heart me-1"></i>Favoritas</a>
+                <a href="{% url 'jobs:list' %}" class="btn btn-accent"><i class="bi bi-search me-1"></i>Buscar vagas</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section pt-4">
+    <div class="container">
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-lg-3">
+                <div class="stat-card">
+                    <span class="icon-square"><i class="bi bi-send"></i></span>
+                    <div>
+                        <div class="stat-label">Enviadas</div>
+                        <div class="stat-value">{{ contagens.enviada|default:0 }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="stat-card">
+                    <span class="icon-square"><i class="bi bi-hourglass-split"></i></span>
+                    <div>
+                        <div class="stat-label">Em análise</div>
+                        <div class="stat-value">{{ contagens.em_analise|default:0 }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="stat-card">
+                    <span class="icon-square"><i class="bi bi-chat-dots"></i></span>
+                    <div>
+                        <div class="stat-label">Entrevistas</div>
+                        <div class="stat-value">{{ contagens.entrevista|default:0 }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="stat-card">
+                    <span class="icon-square"><i class="bi bi-patch-check"></i></span>
+                    <div>
+                        <div class="stat-label">Aprovadas</div>
+                        <div class="stat-value">{{ contagens.aprovado|default:0 }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex flex-wrap align-items-center gap-2 mb-4">
+            <a href="{% url 'jobs:minhas_candidaturas' %}" class="chip {% if not status_filtro %}chip-accent{% else %}chip-muted{% endif %} text-decoration-none">Todas ({{ total }})</a>
+            {% for valor, opcao in status_opcoes %}
+            <a href="{% url 'jobs:minhas_candidaturas' %}?status={{ valor }}" class="chip {% if status_filtro == valor %}chip-accent{% else %}chip-muted{% endif %} text-decoration-none">{{ opcao }}</a>
+            {% endfor %}
+        </div>
+
+        <div class="d-flex flex-column gap-3">
+            {% for candidatura in candidaturas %}
+            <div class="card-min fade-up p-3 p-md-4" style="transition-delay: {% widthratio forloop.counter0 1 50 %}ms;">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="icon-square"><i class="bi bi-briefcase"></i></span>
+                        <div>
+                            <div class="fw-semibold">{{ candidatura.vaga.funcao|default:"Vaga removida" }}</div>
+                            <div class="text-muted small">
+                                {% if candidatura.vaga.nome_empresa %}{{ candidatura.vaga.nome_empresa }}{% endif %}
+                                {% if candidatura.data_display %} &middot; enviada em {{ candidatura.data_display }}{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <span class="chip {% if candidatura.status_candidatura == 'aprovado' %}chip-ok{% elif candidatura.status_candidatura == 'recusado' %}chip-danger{% elif candidatura.status_candidatura == 'entrevista' %}chip-warn{% elif candidatura.status_candidatura == 'em_analise' %}chip-info{% else %}chip-muted{% endif %}">{{ candidatura.status_display }}</span>
+                        {% if candidatura.vaga %}
+                        <a href="{% url 'jobs:detail' candidatura.vaga_id %}" class="btn btn-ghost btn-sm px-3">Ver vaga</a>
+                        {% endif %}
+                        {% if candidatura.vaga and candidatura.vaga.empresa_uid %}
+                        <a href="{% url 'jobs:conversa' candidatura.vaga_id candidatura.vaga.empresa_uid %}" class="btn btn-ghost btn-sm px-3" title="Conversar com a empresa"><i class="bi bi-chat-dots"></i></a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state">
+                <i class="bi bi-send d-block mb-2"></i>
+                <p class="mb-1 fw-medium">Nenhuma candidatura{% if status_filtro %} com este status{% endif %}</p>
+                <p class="text-muted small mb-3">Explore as vagas disponíveis e envie sua primeira candidatura.</p>
+                <a href="{% url 'jobs:list' %}" class="btn btn-accent">Ver vagas</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

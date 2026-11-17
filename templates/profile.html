@@ -1,0 +1,315 @@
+{% extends 'base.html' %}
+{% block title %}Meu perfil - Oportunet{% endblock %}
+
+{% block content %}
+<section class="page-band">
+    <div class="container">
+        <div class="d-flex flex-wrap align-items-center gap-3">
+            {% if user.foto_perfil %}
+                <img src="{{ user.foto_perfil.url }}" alt="Foto de {{ user.nome_completo }}"
+                     style="width:72px;height:72px;border-radius:50%;object-fit:cover;border:1px solid var(--border);">
+            {% else %}
+                <span class="icon-square icon-square-lg"><i class="bi bi-person"></i></span>
+            {% endif %}
+            <div class="flex-grow-1">
+                <span class="eyebrow">Minha conta</span>
+                <h1 class="page-title mt-1 mb-1">{{ user.nome_completo|default:user.email }}</h1>
+                <div class="d-flex flex-wrap gap-2">
+                    <span class="chip chip-accent">{{ user.get_tipo_usuario_display }}</span>
+                    {% if user.verificado %}<span class="chip chip-info"><i class="bi bi-patch-check-fill"></i>Verificada</span>{% endif %}
+                    <span class="chip chip-muted chip-clip"><i class="bi bi-envelope"></i>{{ user.email }}</span>
+                </div>
+            </div>
+            <a href="{% url 'core:dashboard' %}" class="btn btn-ghost btn-mob-full"><i class="bi bi-grid me-1"></i>Meu painel</a>
+        </div>
+    </div>
+</section>
+
+<section class="section pt-4">
+    <div class="container">
+
+        {% if user.tipo_usuario == 'candidato' %}
+        <div class="card-flat p-4 mb-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+                <div>
+                    <h2 class="h6 fw-semibold mb-0"><i class="bi bi-speedometer2 text-accent me-2"></i>Perfil {{ completude }}% completo</h2>
+                    <p class="text-muted small mb-0">Complete seus dados para aumentar suas chances de ser chamado.</p>
+                </div>
+                <span class="stat-value text-accent">{{ completude }}%</span>
+            </div>
+            <div class="progress" style="height:10px;border-radius:999px;">
+                <div class="progress-bar" role="progressbar" style="width: {{ completude }}%;background:linear-gradient(90deg,#22c55e,#15803d);" aria-valuenow="{{ completude }}" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            {% if pendentes %}
+            <div class="mt-3">
+                <p class="text-muted small mb-2"><i class="bi bi-lightbulb me-1"></i>Para chegar a 100%, preencha:</p>
+                <div class="d-flex flex-wrap gap-2">
+                    {% for campo in pendentes %}<span class="chip chip-muted">{{ campo }}</span>{% endfor %}
+                </div>
+            </div>
+            {% else %}
+            <p class="text-success small mb-0 mt-3"><i class="bi bi-check-circle-fill me-1"></i>Perfil completo! Seus dados estão atualizados.</p>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if user.tipo_usuario == 'empresa' %}
+        <div class="card-flat p-4 mb-4 d-flex flex-wrap align-items-center gap-3 justify-content-between">
+            <div>
+                <h2 class="h6 fw-semibold mb-1">
+                    {% if user.verificado %}<i class="bi bi-patch-check-fill text-accent me-2"></i>Empresa verificada{% else %}<i class="bi bi-patch-check text-accent me-2"></i>Verificação de empresa{% endif %}
+                </h2>
+                <p class="text-muted small mb-0">
+                    {% if user.verificado %}
+                        Sua empresa tem o selo de confiança, que aparece nas suas vagas.
+                    {% else %}
+                        Solicite o selo de verificação para transmitir mais confiança aos candidatos.
+                    {% endif %}
+                </p>
+            </div>
+            {% if not user.verificado %}
+            <button class="btn btn-soft" type="button" data-bs-toggle="collapse" data-bs-target="#formVerificacao" aria-expanded="false" aria-controls="formVerificacao">
+                <i class="bi bi-patch-check me-1"></i>Solicitar verificação
+            </button>
+            {% endif %}
+        </div>
+
+        {% if not user.verificado %}
+        <div class="collapse mb-4" id="formVerificacao">
+            <form method="POST" action="{% url 'core:solicitar_verificacao' %}" enctype="multipart/form-data" class="card-flat p-4">
+                {% csrf_token %}
+                <h2 class="h6 fw-semibold mb-3">Enviar pedido de verificação</h2>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">CNPJ</label>
+                        <input type="text" name="cnpj" class="form-control" placeholder="00.000.000/0000-00" maxlength="18">
+                        <div class="form-text">Opcional, mas agiliza a análise.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Documento comprobatório</label>
+                        <input type="file" name="documento" class="form-control" accept="application/pdf,image/png,image/jpeg,image/webp">
+                        <div class="form-text">PDF ou imagem (JPG, PNG, WEBP), até 10 MB.</div>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Mensagem</label>
+                        <textarea name="mensagem" class="form-control" rows="3" placeholder="Conte um pouco sobre a empresa e envie dados de contato para a análise."></textarea>
+                    </div>
+                </div>
+                <div class="d-flex gap-2 mt-4">
+                    <button type="submit" class="btn btn-accent"><i class="bi bi-send me-1"></i>Enviar pedido</button>
+                    <button type="button" class="btn btn-ghost" data-bs-toggle="collapse" data-bs-target="#formVerificacao">Cancelar</button>
+                </div>
+            </form>
+        </div>
+        {% endif %}
+        {% endif %}
+
+        <ul class="nav nav-pills gap-2 mb-4" id="abasPerfil" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link {% if aba != 'profissional' and aba != 'seguranca' %}active{% endif %}" id="aba-conta-tab" data-bs-toggle="pill" data-bs-target="#aba-conta" type="button" role="tab">
+                    <i class="bi bi-person-vcard me-1"></i>Dados da conta
+                </button>
+            </li>
+            {% if user.tipo_usuario == 'candidato' %}
+            <li class="nav-item" role="presentation">
+                <button class="nav-link {% if aba == 'profissional' %}active{% endif %}" id="aba-profissional-tab" data-bs-toggle="pill" data-bs-target="#aba-profissional" type="button" role="tab">
+                    <i class="bi bi-mortarboard me-1"></i>Perfil profissional
+                </button>
+            </li>
+            {% endif %}
+            <li class="nav-item" role="presentation">
+                <button class="nav-link {% if aba == 'seguranca' %}active{% endif %}" id="aba-seguranca-tab" data-bs-toggle="pill" data-bs-target="#aba-seguranca" type="button" role="tab">
+                    <i class="bi bi-shield-lock me-1"></i>Segurança
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+
+            <!-- Dados da conta -->
+            <div class="tab-pane fade {% if aba != 'profissional' and aba != 'seguranca' %}show active{% endif %}" id="aba-conta" role="tabpanel">
+                <form method="POST" enctype="multipart/form-data" class="card-flat p-4 p-md-5">
+                    {% csrf_token %}
+                    <input type="hidden" name="secao" value="conta">
+
+                    <h2 class="h6 fw-semibold mb-4"><i class="bi bi-person-vcard text-accent me-2"></i>Dados da conta</h2>
+
+                    <div class="row g-4">
+                        <div class="col-md-3">
+                            <label class="form-label d-block">Foto de perfil</label>
+                            <div class="text-center">
+                                <img id="previaFotoPerfil"
+                                     src="{% if user.foto_perfil %}{{ user.foto_perfil.url }}{% endif %}"
+                                     alt="Foto de perfil"
+                                     style="width:110px;height:110px;border-radius:50%;object-fit:cover;border:1px solid var(--border);{% if not user.foto_perfil %}display:none;{% endif %}">
+                                {% if not user.foto_perfil %}
+                                    <span class="icon-square icon-square-lg" id="previaFotoPerfilVazia"><i class="bi bi-person"></i></span>
+                                {% endif %}
+                            </div>
+                            <input type="file" name="foto_perfil" id="foto_perfil" class="form-control mt-3" accept="image/png,image/jpeg,image/webp,image/gif">
+                            <div class="input-hint mt-1">JPG, PNG, WEBP ou GIF. Até 5 MB.</div>
+                        </div>
+
+                        <div class="col-md-9">
+                            <div class="row g-3">
+                                <div class="col-md-8">
+                                    <label class="form-label">Nome completo *</label>
+                                    <input type="text" name="nome_completo" class="form-control" value="{{ user.nome_completo|default:'' }}" required minlength="3">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Telefone</label>
+                                    <input type="tel" name="telefone" class="form-control" value="{{ user.telefone|default:'' }}" placeholder="(00) 00000-0000" maxlength="15">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Cidade</label>
+                                    <input type="text" name="cidade" class="form-control" value="{{ user.cidade|default:'' }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Data de nascimento</label>
+                                    <input type="date" name="data_nascimento" class="form-control" value="{{ user.data_nascimento|date:'Y-m-d' }}">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Endereço</label>
+                                    <input type="text" name="endereco" class="form-control" value="{{ user.endereco|default:'' }}" placeholder="Rua, número, bairro">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">E-mail</label>
+                                    <input type="email" class="form-control" value="{{ user.email }}" disabled>
+                                    <div class="input-hint mt-1">O e-mail de acesso não pode ser alterado por aqui.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="divider pt-4 mt-4 d-flex justify-content-end">
+                        <button type="submit" class="btn btn-accent px-4"><i class="bi bi-check2 me-2"></i>Salvar alterações</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Perfil profissional -->
+            {% if user.tipo_usuario == 'candidato' %}
+            <div class="tab-pane fade {% if aba == 'profissional' %}show active{% endif %}" id="aba-profissional" role="tabpanel">
+                <form method="POST" enctype="multipart/form-data" class="card-flat p-4 p-md-5">
+                    {% csrf_token %}
+                    <input type="hidden" name="secao" value="profissional">
+
+                    <h2 class="h6 fw-semibold mb-4"><i class="bi bi-mortarboard text-accent me-2"></i>Perfil profissional</h2>
+
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Sobre mim</label>
+                            <textarea name="sobre_mim" class="form-control" rows="3" placeholder="Um resumo sobre você e seus objetivos profissionais.">{{ perfil_candidato.sobre_mim|default:'' }}</textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Escolaridade</label>
+                            <select name="escolaridade" class="form-select">
+                                <option value="">Selecione</option>
+                                {% for valor, rotulo in escolaridade_choices %}
+                                    <option value="{{ valor }}" {% if perfil_candidato.escolaridade == valor %}selected{% endif %}>{{ rotulo }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Instituição de ensino</label>
+                            <input type="text" name="instituicao" class="form-control" value="{{ perfil_candidato.instituicao|default:'' }}" placeholder="Ex.: IFPI - Campus Paulistana">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Formação acadêmica</label>
+                            <textarea name="formacao_academica" class="form-control" rows="2" placeholder="Cursos de graduação, técnico, etc.">{{ perfil_candidato.formacao_academica|default:'' }}</textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Cursos complementares</label>
+                            <textarea name="cursos" class="form-control" rows="3" placeholder="Cursos livres, capacitações...">{{ perfil_candidato.cursos|default:'' }}</textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Diplomas e certificados</label>
+                            <textarea name="diplomas" class="form-control" rows="3" placeholder="Certificações relevantes">{{ perfil_candidato.diplomas|default:'' }}</textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Experiências profissionais</label>
+                            <textarea name="experiencias" class="form-control" rows="4" placeholder="Empresa, cargo, período e principais atividades.">{{ perfil_candidato.experiencias|default:'' }}</textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Habilidades</label>
+                            <textarea name="habilidades" class="form-control" rows="3" placeholder="Ex.: Excel avançado, atendimento ao público...">{{ perfil_candidato.habilidades|default:'' }}</textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Idiomas</label>
+                            <input type="text" name="idiomas" class="form-control" value="{{ perfil_candidato.idiomas|default:'' }}" placeholder="Ex.: Português (nativo), Inglês (intermediário)">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Link do portfólio</label>
+                            <input type="url" name="link_portfolio" class="form-control" value="{{ perfil_candidato.link_portfolio|default:'' }}" placeholder="https://...">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Currículo (PDF)</label>
+                            {% if perfil_candidato.curriculo_pdf %}
+                                <div class="mb-2">
+                                    <a href="{{ perfil_candidato.curriculo_pdf.url }}" target="_blank" class="chip chip-accent"><i class="bi bi-file-earmark-pdf"></i>Ver currículo atual</a>
+                                </div>
+                            {% endif %}
+                            <input type="file" name="curriculo_pdf" class="form-control" accept="application/pdf">
+                            <div class="input-hint mt-1">Apenas PDF. Até 10 MB.</div>
+                        </div>
+                    </div>
+
+                    <div class="divider pt-4 mt-4 d-flex justify-content-end">
+                        <button type="submit" class="btn btn-accent px-4"><i class="bi bi-check2 me-2"></i>Salvar perfil</button>
+                    </div>
+                </form>
+            </div>
+            {% endif %}
+
+            <!-- Segurança -->
+            <div class="tab-pane fade {% if aba == 'seguranca' %}show active{% endif %}" id="aba-seguranca" role="tabpanel">
+                <form method="POST" class="card-flat p-4 p-md-5">
+                    {% csrf_token %}
+                    <input type="hidden" name="secao" value="seguranca">
+
+                    <h2 class="h6 fw-semibold mb-4"><i class="bi bi-shield-lock text-accent me-2"></i>Alterar senha</h2>
+
+                    <div class="row g-3" style="max-width:520px;">
+                        <div class="col-12">
+                            <label class="form-label">Senha atual *</label>
+                            <input type="password" name="senha_atual" class="form-control" required autocomplete="current-password">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Nova senha *</label>
+                            <input type="password" name="nova_senha" class="form-control" required minlength="6" autocomplete="new-password">
+                            <div class="input-hint mt-1">Mínimo de 6 caracteres.</div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Confirmar nova senha *</label>
+                            <input type="password" name="confirmar_senha" class="form-control" required minlength="6" autocomplete="new-password">
+                        </div>
+                    </div>
+
+                    <div class="divider pt-4 mt-4 d-flex justify-content-end">
+                        <button type="submit" class="btn btn-accent px-4"><i class="bi bi-key me-2"></i>Alterar senha</button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const input = document.getElementById('foto_perfil');
+    if (!input) return;
+    input.addEventListener('change', function () {
+        const arquivo = this.files && this.files[0];
+        if (!arquivo) return;
+        const previa = document.getElementById('previaFotoPerfil');
+        const vazia = document.getElementById('previaFotoPerfilVazia');
+        previa.src = URL.createObjectURL(arquivo);
+        previa.style.display = 'block';
+        if (vazia) vazia.style.display = 'none';
+    });
+})();
+</script>
+{% endblock %}

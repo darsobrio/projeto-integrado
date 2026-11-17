@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}Imóveis salvos - Oportunet{% endblock %}
+
+{% block content %}
+<section class="page-band">
+    <div class="container">
+        <a href="{% url 'properties:list' %}" class="small text-muted d-inline-block mb-3"><i class="bi bi-arrow-left me-1"></i>Voltar para imóveis</a>
+        <span class="eyebrow">Meus favoritos</span>
+        <h1 class="page-title mt-2 mb-1">Imóveis salvos</h1>
+        <p class="text-muted mb-0">{{ imoveis|length }} imóve{{ imoveis|length|pluralize:"l,is" }} salvo{{ imoveis|length|pluralize }}</p>
+    </div>
+</section>
+
+<section class="section pt-4 pb-5">
+    <div class="container">
+        <div class="row g-4">
+            {% for imovel in imoveis %}
+            <div class="col-md-6 col-xl-4">
+                <div class="card-min d-flex flex-column h-100">
+                    <div class="card-cover">
+                        {% if imovel.foto_url %}
+                            <img src="{{ imovel.foto_url }}" alt="Foto do imóvel em {{ imovel.endereco }}" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover;">
+                        {% else %}
+                            <i class="bi bi-house-door"></i>
+                        {% endif %}
+                        <span class="card-cover-price">R$ {{ imovel.valor_aluguel_display }}/mês</span>
+                    </div>
+
+                    <div class="p-4 d-flex flex-column flex-grow-1">
+                        <h2 class="h6 fw-semibold mb-1">{{ imovel.endereco }}</h2>
+                        <p class="text-muted small mb-3"><i class="bi bi-geo-alt me-1"></i>{% if imovel.bairro %}{{ imovel.bairro }}, {% endif %}{{ imovel.cidade }}</p>
+
+                        <div class="d-flex flex-wrap gap-3 text-muted small border-top pt-3 mt-2 mb-3">
+                            <span><i class="bi bi-door-open me-1"></i>{{ imovel.quartos }} quarto{{ imovel.quartos|pluralize }}</span>
+                            <span><i class="bi bi-droplet me-1"></i>{{ imovel.banheiros }} banh.</span>
+                            <span><i class="bi bi-car-front me-1"></i>{{ imovel.garagem }} vaga{{ imovel.garagem|pluralize }}</span>
+                        </div>
+
+                        <div class="d-flex gap-2 mt-auto">
+                            <form method="POST" action="{% url 'properties:favoritar' imovel.pk %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="next" value="{{ request.path }}">
+                                <button type="submit" class="btn btn-ghost px-3 h-100" title="Remover dos favoritos">
+                                    <i class="bi bi-heart-fill text-accent"></i>
+                                </button>
+                            </form>
+                            <a href="{% url 'properties:detail' imovel.pk %}" class="btn btn-accent flex-grow-1">Ver detalhes</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="empty-state">
+                    <i class="bi bi-house-heart d-block mb-2"></i>
+                    <p class="mb-1 fw-medium">Você ainda não salvou nenhum imóvel</p>
+                    <p class="text-muted small mb-3">Toque no coração dos imóveis que te interessam para salvá-los aqui.</p>
+                    <a href="{% url 'properties:list' %}" class="btn btn-accent">Ver imóveis</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

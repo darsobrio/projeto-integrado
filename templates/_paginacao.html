@@ -1,0 +1,22 @@
+{% if paginacao.total_paginas > 1 %}
+<nav class="mt-4 d-flex flex-column align-items-center gap-2" aria-label="Navegação de páginas">
+    <ul class="pagination mb-0">
+        <li class="page-item {% if not paginacao.tem_anterior %}disabled{% endif %}">
+            <a class="page-link" href="?page={{ paginacao.pagina_anterior }}{% if paginacao.querystring %}&{{ paginacao.querystring }}{% endif %}">
+                <i class="bi bi-chevron-left"></i>
+            </a>
+        </li>
+        {% for numero in paginacao.numeros %}
+            <li class="page-item {% if numero == paginacao.pagina %}active{% endif %}">
+                <a class="page-link" href="?page={{ numero }}{% if paginacao.querystring %}&{{ paginacao.querystring }}{% endif %}">{{ numero }}</a>
+            </li>
+        {% endfor %}
+        <li class="page-item {% if not paginacao.tem_proxima %}disabled{% endif %}">
+            <a class="page-link" href="?page={{ paginacao.pagina_proxima }}{% if paginacao.querystring %}&{{ paginacao.querystring }}{% endif %}">
+                <i class="bi bi-chevron-right"></i>
+            </a>
+        </li>
+    </ul>
+    <small class="text-muted">Página {{ paginacao.pagina }} de {{ paginacao.total_paginas }}</small>
+</nav>
+{% endif %}

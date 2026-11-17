@@ -52,3 +52,20 @@ def verificar_token_firebase(id_token):
         return auth.verify_id_token(id_token)
     except Exception:
         return None
+
+
+def gerar_link_redefinicao(email):
+    """Gera o link de redefinição de senha do Firebase para o e-mail informado.
+
+    Devolve ``None`` quando o e-mail não pertence a nenhuma conta — assim o
+    fluxo de "esqueci minha senha" não revela quais e-mails existem.
+    """
+    try:
+        return auth.generate_password_reset_link(email)
+    except Exception:
+        return None
+
+
+def alterar_senha(uid, nova_senha):
+    """Troca a senha do usuário no Firebase Authentication."""
+    auth.update_user(uid, password=nova_senha)

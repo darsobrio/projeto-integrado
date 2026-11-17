@@ -24,6 +24,14 @@ STATUS_VAGA_LABELS = {
     'fechada': 'Fechada',
 }
 
+STATUS_CANDIDATURA_LABELS = {
+    'enviada': 'Enviada',
+    'em_analise': 'Em análise',
+    'entrevista': 'Entrevista',
+    'aprovado': 'Aprovado',
+    'recusado': 'Recusado',
+}
+
 # Opções usadas nos formulários de publicação
 TIPO_CONTRATO_CHOICES = list(TIPO_CONTRATO_LABELS.items())
 MODALIDADE_CHOICES = list(MODALIDADE_LABELS.items())
@@ -92,6 +100,25 @@ def formatar_data(valor):
     return convertido.strftime('%d/%m/%Y')
 
 
+def chave_data(valor):
+    """Normaliza datas/timestamps (Firestore, ISO ou date) em número ordenável."""
+    if isinstance(valor, datetime):
+        return valor.timestamp()
+
+    if isinstance(valor, date):
+        return datetime(valor.year, valor.month, valor.day).timestamp()
+
+    texto = str(valor or '').strip()
+
+    if not texto:
+        return 0.0
+
+    try:
+        return datetime.fromisoformat(texto.replace('Z', '+00:00')).timestamp()
+    except ValueError:
+        return 0.0
+
+
 def numero_decimal(valor):
     """Converte um valor de formulário em float, aceitando vírgula."""
     if valor in (None, ''):
@@ -113,3 +140,62 @@ def numero_inteiro(valor, padrao=0):
     if numero is None:
         return padrao
     return int(numero)
+
+
+def somente_digitos(valor):
+    """Remove tudo que não for dígito (pontos, traços, barras)."""
+    return ''.join(caractere for caractere in str(valor or '') if caractere.isdigit())
+
+
+def validar_cpf(valor):
+    """Valida um CPF pelo dígito verificador (rejeita sequências repetidas)."""
+    cpf = somente_digitos(valor)
+
+    if len(cpf) != 11 or cpf == cpf[0] * 11:
+        return False
+
+    for tamanho in (9, 10):
+        soma = sum(int(cpf[i]) * (tamanho + 1 - i) for i in range(tamanho))
+        digito = (soma * 10) % 11
+        if digito == 10:
+            digito = 0
+        if digito != int(cpf[tamanho]):
+            return False
+
+    return True
+
+
+def validar_cnpj(valor):
+    """Valida um CNPJ pelo dígito verificador (rejeita sequências repetidas)."""
+    cnpj = somente_digitos(valor)
+
+    if len(cnpj) != 14 or cnpj == cnpj[0] * 14:
+        return False
+
+    pesos_1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+    pesos_2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+
+    for pesos, posicao in ((pesos_1, 12), (pesos_2, 13)):
+        soma = sum(int(cnpj[i]) * pesos[i] for i in range(posicao))
+        digito = soma % 11
+        digito = 0 if digito < 2 else 11 - digito
+        if digito != int(cnpj[posicao]):
+            return False
+
+    return True
+
+
+def validar_cpf_cnpj(valor):
+    """Valida CPF (11 dígitos) ou CNPJ (14 dígitos). Vazio é aceito (opcional)."""
+    digitos = somente_digitos(valor)
+
+    if not digitos:
+        return True
+
+    if len(digitos) == 11:
+        return validar_cpf(digitos)
+
+    if len(digitos) == 14:
+        return validar_cnpj(digitos)
+
+    return False

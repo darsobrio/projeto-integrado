@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% block title %}Candidaturas recebidas - Oportunet{% endblock %}
+
+{% block extra_css %}
+<style>
+    .kanban {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(190px, 1fr));
+        gap: 1rem;
+        overflow-x: auto;
+        padding-bottom: .5rem;
+        -webkit-overflow-scrolling: touch;
+        scroll-snap-type: x proximity;
+    }
+    .kanban-col {
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: .85rem;
+        min-width: 190px;
+        display: flex;
+        flex-direction: column;
+        scroll-snap-align: start;
+    }
+    .kanban-col > header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .5rem;
+        margin-bottom: .75rem;
+    }
+    .kanban-col h2 {
+        font-size: .74rem;
+        font-weight: 600;
+        letter-spacing: .05em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin: 0;
+    }
+    .kanban-list { display: flex; flex-direction: column; gap: .6rem; }
+    .kanban-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: .7rem .8rem;
+        transition: border-color .2s ease;
+    }
+    .kanban-card:hover { border-color: var(--accent-border); }
+    .kanban-card .avatar {
+        width: 32px; height: 32px; border-radius: 50%;
+        object-fit: cover; flex-shrink: 0;
+        border: 1px solid var(--border);
+    }
+    .kanban-vazio {
+        border: 1px dashed var(--border-strong);
+        border-radius: 12px;
+        padding: 1.1rem .6rem;
+        text-align: center;
+        color: var(--muted);
+        font-size: .75rem;
+    }
+    .kanban-hint { display: none; }
+    @media (max-width: 991.98px) {
+        .kanban { grid-template-columns: repeat(5, minmax(240px, 1fr)); }
+        .kanban-hint { display: block; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="page-band">
+    <div class="container">
+        <span class="eyebrow">Painel da empresa</span>
+        <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mt-2">
+            <div>
+                <h1 class="page-title mb-1">Candidaturas recebidas</h1>
+                <p class="text-muted mb-0">Acompanhe e mova cada candidato pelas etapas do processo seletivo.</p>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{% url 'jobs:mensagens' %}" class="btn btn-ghost"><i class="bi bi-chat-dots me-1"></i>Mensagens</a>
+                <a href="{% url 'core:dashboard' %}" class="btn btn-ghost"><i class="bi bi-grid me-1"></i>Meu painel</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section pt-4">
+    <div class="container">
+        <form method="GET" class="card-flat p-3 p-md-4 mb-4">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-6 col-lg-5">
+                    <label class="form-label">Filtrar por vaga</label>
+                    <select name="vaga" class="form-select" onchange="this.form.submit()">
+                        <option value="">Todas as vagas</option>
+                        {% for vaga in vagas %}
+                        <option value="{{ vaga.pk }}" {% if vaga_filtro == vaga.pk|stringformat:'s' %}selected{% endif %}>{{ vaga.funcao }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <span class="chip chip-info"><i class="bi bi-inbox"></i>{{ total }} candidatura{{ total|pluralize }} no total</span>
+                </div>
+                <div class="col-lg-3 text-lg-end">
+                    {% if vaga_filtro %}
+                    <a href="{% url 'jobs:candidaturas' %}" class="btn btn-ghost btn-sm"><i class="bi bi-x-lg me-1"></i>Limpar filtro</a>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+
+        {% if vagas %}
+        <p class="kanban-hint text-muted small mb-2"><i class="bi bi-arrow-left-right me-1"></i>Arraste para o lado para ver todas as etapas.</p>
+        <div class="kanban">
+            {% for coluna in colunas %}
+            <div class="kanban-col">
+                <header>
+                    <h2>{{ coluna.rotulo }}</h2>
+                    <span class="chip chip-muted">{{ coluna.itens|length }}</span>
+                </header>
+                <div class="kanban-list">
+                    {% for candidatura in coluna.itens %}
+                    <div class="kanban-card">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            {% if candidatura.candidato.foto_url %}
+                                <img src="{{ candidatura.candidato.foto_url }}" alt="Foto de {{ candidatura.candidato.nome }}" class="avatar">
+                            {% else %}
+                                <span class="icon-square avatar d-inline-flex align-items-center justify-content-center"><i class="bi bi-person"></i></span>
+                            {% endif %}
+                            <div class="flex-grow-1 overflow-hidden">
+                                <div class="fw-semibold text-truncate" style="font-size:.85rem;">{{ candidatura.candidato.nome|default:"Candidato" }}</div>
+                                <div class="text-muted text-truncate" style="font-size:.74rem;">{{ candidatura.vaga.funcao|default:"Vaga" }}</div>
+                            </div>
+                        </div>
+
+                        {% if candidatura.data_display %}
+                        <div class="text-muted" style="font-size:.72rem;"><i class="bi bi-clock-history me-1"></i>{{ candidatura.data_display }}</div>
+                        {% endif %}
+                        {% if candidatura.mensagem %}
+                        <p class="text-muted mt-2 mb-0" style="font-size:.74rem;line-height:1.5;">{{ candidatura.mensagem|truncatechars:90 }}</p>
+                        {% endif %}
+
+                        <div class="d-flex flex-wrap gap-1 mt-2">
+                            {% if candidatura.candidato.perfil_url %}
+                            <a href="{{ candidatura.candidato.perfil_url }}" class="btn btn-ghost btn-sm px-2 py-1" title="Ver perfil do candidato"><i class="bi bi-person-badge"></i></a>
+                            {% endif %}
+                            {% if candidatura.candidato.curriculo_url %}
+                            <a href="{{ candidatura.candidato.curriculo_url }}" target="_blank" rel="noopener" class="btn btn-ghost btn-sm px-2 py-1" title="Abrir currículo (PDF)"><i class="bi bi-file-earmark-pdf"></i></a>
+                            {% endif %}
+                            {% if candidatura.candidato_uid %}
+                            <a href="{% url 'jobs:conversa' candidatura.vaga_id candidatura.candidato_uid %}" class="btn btn-ghost btn-sm px-2 py-1" title="Conversar"><i class="bi bi-chat-dots"></i></a>
+                            {% endif %}
+                        </div>
+
+                        <form method="POST" action="{% url 'jobs:candidatura_status' candidatura.pk %}" class="mt-2">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                            <select name="status" class="form-select form-select-sm" onchange="this.form.submit()" aria-label="Mudar status da candidatura">
+                                {% for valor, opcao in status_opcoes %}
+                                <option value="{{ valor }}" {% if candidatura.status_candidatura == valor %}selected{% endif %}>{{ opcao }}</option>
+                                {% endfor %}
+                            </select>
+                        </form>
+                    </div>
+                    {% empty %}
+                    <div class="kanban-vazio">Nenhum candidato nesta etapa.</div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-megaphone d-block mb-2"></i>
+            <p class="mb-1 fw-medium">Você ainda não publicou vagas</p>
+            <p class="text-muted small mb-3">Publique uma vaga para começar a receber candidaturas.</p>
+            <a href="{% url 'jobs:create' %}" class="btn btn-accent"><i class="bi bi-plus-lg me-1"></i>Publicar vaga</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

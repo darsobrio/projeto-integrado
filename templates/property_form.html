@@ -2,20 +2,43 @@
 {% block title %}{% if modo_edicao %}Editar imóvel{% else %}Anunciar imóvel{% endif %} - Oportunet{% endblock %}
 
 {% block content %}
-<section class="section">
+<section class="page-band">
     <div class="container" style="max-width: 880px;">
-        <a href="{% url 'core:dashboard' %}" class="small text-muted d-inline-block mb-4"><i class="bi bi-arrow-left me-1"></i>Voltar ao painel</a>
+        <a href="{% url 'core:dashboard' %}" class="small text-muted d-inline-block mb-3"><i class="bi bi-arrow-left me-1"></i>Voltar ao painel</a>
+        <span class="eyebrow">Proprietário</span>
+        <h1 class="page-title mt-2 mb-1">{% if modo_edicao %}Editar imóvel{% else %}Anunciar imóvel{% endif %}</h1>
+        <p class="text-muted mb-0">Preencha as informações abaixo. Os campos com * são obrigatórios.</p>
+    </div>
+</section>
 
-        <div class="mb-4">
-            <span class="eyebrow">Proprietário</span>
-            <h1 class="page-title mt-2 mb-1">{% if modo_edicao %}Editar imóvel{% else %}Anunciar imóvel{% endif %}</h1>
-            <p class="text-muted mb-0">Preencha as informações abaixo. Os campos com * são obrigatórios.</p>
-        </div>
-
-        <form method="POST" class="card-flat p-4 p-md-5">
+<section class="section pt-4">
+    <div class="container" style="max-width: 880px;">
+        <form method="POST" enctype="multipart/form-data" class="card-flat p-4 p-md-5">
             {% csrf_token %}
 
-            <h2 class="h6 fw-semibold mb-3">Localização</h2>
+            <h2 class="h6 fw-semibold mb-3"><i class="bi bi-camera text-accent me-2"></i>Fotos do imóvel</h2>
+            <div class="row g-3 mb-4 align-items-start">
+                <div class="col-md-7">
+                    <label class="form-label" for="fotos">Fotos (até 6)</label>
+                    <input type="file" name="fotos" id="fotos" class="form-control" accept="image/png,image/jpeg,image/webp,image/gif" multiple>
+                    <div class="input-hint mt-1">Formatos: JPG, PNG, WEBP ou GIF, até 5 MB cada. A primeira foto será a capa.{% if modo_edicao %} Envie novas fotos apenas se quiser substituir as atuais.{% endif %}</div>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label d-block">Prévia</label>
+                    <div id="previaGaleria" class="d-flex flex-wrap gap-2">
+                        {% for url in imovel.fotos_urls %}
+                            <img src="{{ url }}" alt="Foto do imóvel" class="rounded-3 border" style="width:76px;height:76px;object-fit:cover;">
+                        {% empty %}
+                            <div id="previaVazia" class="card-quiet d-flex flex-column align-items-center justify-content-center text-muted" style="width:100%;height:96px;">
+                                <i class="bi bi-images fs-4"></i>
+                                <small class="mt-1">Sem fotos</small>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="h6 fw-semibold mb-3"><i class="bi bi-geo-alt text-accent me-2"></i>Localização</h2>
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Endereço *</label>
@@ -31,7 +54,26 @@
                 </div>
             </div>
 
-            <h2 class="h6 fw-semibold mb-3">Valores e características</h2>
+            <h2 class="h6 fw-semibold mb-3"><i class="bi bi-map text-accent me-2"></i>Localização no mapa</h2>
+            <div class="mb-4">
+                <div class="row g-3 align-items-end mb-2">
+                    <div class="col-md-4">
+                        <label class="form-label">Latitude</label>
+                        <input type="text" name="latitude" id="campoLatitude" class="form-control" value="{% if imovel.latitude %}{{ imovel.latitude }}{% endif %}" placeholder="Ex: -8.3828">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Longitude</label>
+                        <input type="text" name="longitude" id="campoLongitude" class="form-control" value="{% if imovel.longitude %}{{ imovel.longitude }}{% endif %}" placeholder="Ex: -41.4464">
+                    </div>
+                    <div class="col-md-4 d-grid">
+                        <button type="button" id="btnMinhaLocalizacao" class="btn btn-ghost"><i class="bi bi-crosshair me-1"></i>Usar minha localização</button>
+                    </div>
+                </div>
+                <div id="mapaFormulario" style="height:280px;border-radius:14px;border:1px solid var(--border);"></div>
+                <div class="input-hint mt-1">Clique no mapa para marcar o ponto exato do imóvel. O preenchimento é opcional, mas ajuda os interessados a encontrar a região.</div>
+            </div>
+
+            <h2 class="h6 fw-semibold mb-3"><i class="bi bi-cash-coin text-accent me-2"></i>Valores e características</h2>
             <div class="row g-3 mb-4">
                 <div class="col-md-4">
                     <label class="form-label">Valor do aluguel (R$) *</label>
@@ -75,7 +117,7 @@
                 </div>
             </div>
 
-            <h2 class="h6 fw-semibold mb-3">Detalhes</h2>
+            <h2 class="h6 fw-semibold mb-3"><i class="bi bi-card-text text-accent me-2"></i>Detalhes</h2>
             <div class="row g-3 mb-4">
                 <div class="col-12">
                     <label class="form-label">Descrição</label>
@@ -102,4 +144,82 @@
         </form>
     </div>
 </section>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    const campoFotos = document.getElementById('fotos');
+    const previaGaleria = document.getElementById('previaGaleria');
+
+    if (campoFotos && previaGaleria) {
+        campoFotos.addEventListener('change', function () {
+            const arquivos = Array.from(this.files || []).slice(0, 6);
+            if (!arquivos.length) return;
+
+            previaGaleria.innerHTML = '';
+            arquivos.forEach(function (arquivo) {
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(arquivo);
+                img.className = 'rounded-3 border';
+                img.style.cssText = 'width:76px;height:76px;object-fit:cover;';
+                previaGaleria.appendChild(img);
+            });
+        });
+    }
+
+    (function () {
+        const mapEl = document.getElementById('mapaFormulario');
+        if (!mapEl || typeof L === 'undefined') return;
+
+        const campoLat = document.getElementById('campoLatitude');
+        const campoLng = document.getElementById('campoLongitude');
+        const temPonto = campoLat.value && campoLng.value;
+        const inicio = [
+            parseFloat(campoLat.value) || -8.3828,
+            parseFloat(campoLng.value) || -41.4464
+        ];
+
+        const mapa = L.map('mapaFormulario').setView(inicio, temPonto ? 15 : 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap'
+        }).addTo(mapa);
+
+        let marcador = null;
+
+        function marcar(lat, lng) {
+            if (marcador) {
+                marcador.setLatLng([lat, lng]);
+            } else {
+                marcador = L.marker([lat, lng]).addTo(mapa);
+            }
+            campoLat.value = lat.toFixed(6);
+            campoLng.value = lng.toFixed(6);
+        }
+
+        if (temPonto) marcar(inicio[0], inicio[1]);
+
+        mapa.on('click', function (evento) {
+            marcar(evento.latlng.lat, evento.latlng.lng);
+        });
+
+        const botao = document.getElementById('btnMinhaLocalizacao');
+        if (botao) {
+            botao.addEventListener('click', function () {
+                if (!navigator.geolocation) return;
+                navigator.geolocation.getCurrentPosition(function (posicao) {
+                    const lat = posicao.coords.latitude;
+                    const lng = posicao.coords.longitude;
+                    mapa.setView([lat, lng], 16);
+                    marcar(lat, lng);
+                });
+            });
+        }
+    })();
+</script>
 {% endblock %}

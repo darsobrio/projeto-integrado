@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block title %}Conversa - {{ vaga.funcao }} - Oportunet{% endblock %}
+
+{% block content %}
+<section class="section py-4">
+    <div class="container" style="max-width: 820px;">
+        <a href="{% url 'jobs:mensagens' %}" class="small text-muted d-inline-block mb-3"><i class="bi bi-arrow-left me-1"></i>Voltar para mensagens</a>
+
+        <div class="card-flat p-4 mb-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <span class="icon-square icon-square-lg"><i class="bi bi-person-badge"></i></span>
+                <div>
+                    <div class="fw-semibold">{{ candidato_nome }}</div>
+                    <div class="text-muted small">{{ vaga.funcao }} &middot; {{ vaga.nome_empresa }}</div>
+                </div>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{% url 'jobs:detail' vaga.pk %}" class="btn btn-ghost btn-sm px-3"><i class="bi bi-briefcase me-1"></i>Ver vaga</a>
+                {% if curriculo_candidato %}<a href="{{ curriculo_candidato }}" target="_blank" class="btn btn-ghost btn-sm px-3"><i class="bi bi-file-earmark-pdf me-1"></i>Currículo</a>{% endif %}
+            </div>
+        </div>
+
+        <div class="d-flex flex-column gap-3 mb-4">
+            {% for mensagem in mensagens %}
+            <div class="d-flex {% if mensagem.remetente_tipo == 'empresa' and sou_empresa %}justify-content-end{% elif mensagem.remetente_tipo == 'candidato' and not sou_empresa %}justify-content-end{% else %}justify-content-start{% endif %}">
+                <div class="card-min p-3" style="max-width: 78%;">
+                    <div class="small fw-semibold mb-1 text-accent">
+                        {% if mensagem.remetente_tipo == 'empresa' %}{{ vaga.nome_empresa }}{% else %}{{ candidato_nome }}{% endif %}
+                    </div>
+                    {% if mensagem.texto %}<div class="mb-0" style="white-space:pre-line;">{{ mensagem.texto }}</div>{% endif %}
+                    {% if mensagem.curriculo_url %}
+                    <a href="{{ mensagem.curriculo_url }}" target="_blank" class="chip chip-accent mt-2 d-inline-flex text-decoration-none"><i class="bi bi-file-earmark-pdf"></i>Currículo em PDF</a>
+                    {% endif %}
+                    <div class="text-muted mt-1" style="font-size:.72rem;">{{ mensagem.criado_em|date:"d/m/Y H:i" }}</div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state">
+                <i class="bi bi-chat-dots d-block mb-2"></i>
+                <p class="text-muted small mb-0">Nenhuma mensagem ainda. Envie a primeira!</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <form method="POST" class="card-flat p-4">
+            {% csrf_token %}
+            <label class="form-label" for="texto">Escreva sua mensagem</label>
+            <textarea name="texto" id="texto" rows="3" class="form-control mb-3" placeholder="Digite aqui..."></textarea>
+            {% if not sou_empresa %}
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" name="anexar_curriculo" id="anexar_curriculo">
+                <label class="form-check-label small" for="anexar_curriculo">Anexar meu currículo em PDF</label>
+            </div>
+            {% endif %}
+            <button type="submit" class="btn btn-accent px-4"><i class="bi bi-send me-1"></i>Enviar</button>
+        </form>
+    </div>
+</section>
+{% endblock %}

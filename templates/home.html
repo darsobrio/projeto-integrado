@@ -2,44 +2,65 @@
 {% block title %}Início - Oportunet{% endblock %}
 
 {% block content %}
-<section class="section pb-0">
+<!-- ---------- Hero ---------- -->
+<section class="hero">
     <div class="container">
         <div class="row align-items-center g-5">
             <div class="col-lg-6">
-                <span class="eyebrow">Oportunidades perto de você</span>
-                <h1 class="display-5 fw-bold mt-3 mb-3" style="letter-spacing:-0.035em;">
-                    Encontre sua próxima vaga ou o imóvel ideal.
+                <span class="hero-badge"><i class="bi bi-geo-alt"></i>Oportunidades perto de você</span>
+                <h1 class="hero-title mt-3 mb-3">
+                    Encontre sua próxima vaga ou o <span class="hero-highlight">imóvel ideal</span>.
                 </h1>
                 <p class="lead-min mb-4" style="max-width: 32rem;">
                     Uma plataforma simples para conectar a comunidade de Paulistana a empregos,
                     estágios e moradias acessíveis.
                 </p>
-                <div class="d-flex flex-wrap gap-2 mb-5">
-                    <a href="{% url 'jobs:list' %}" class="btn btn-accent px-4 py-2">Ver vagas</a>
-                    <a href="{% url 'properties:list' %}" class="btn btn-ghost px-4 py-2">Ver imóveis</a>
+                <div class="d-flex flex-wrap gap-2 mb-4">
+                    <a href="{% url 'jobs:list' %}" class="btn btn-accent px-4 py-2"><i class="bi bi-briefcase me-2"></i>Ver vagas</a>
+                    <a href="{% url 'properties:list' %}" class="btn btn-ghost px-4 py-2"><i class="bi bi-house me-2"></i>Ver imóveis</a>
                 </div>
-                <div class="d-flex gap-5">
-                    <div>
-                        <div class="fs-4 fw-bold">{{ total_vagas }}</div>
-                        <div class="text-muted small">Vagas abertas</div>
+                <div class="d-flex flex-wrap gap-2 mb-4">
+                    <span class="chip chip-accent"><i class="bi bi-check2"></i>100% gratuito</span>
+                    <span class="chip"><i class="bi bi-geo-alt"></i>Paulistana - PI</span>
+                    <span class="chip"><i class="bi bi-people"></i>Comunidade local</span>
+                </div>
+                <div class="row g-3" style="max-width: 30rem;">
+                    <div class="col-6">
+                        <div class="stat-card">
+                            <span class="icon-square"><i class="bi bi-briefcase"></i></span>
+                            <div>
+                                <div class="stat-value">{{ total_vagas }}</div>
+                                <div class="stat-label">Vagas abertas</div>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <div class="fs-4 fw-bold">{{ total_imoveis }}</div>
-                        <div class="text-muted small">Imóveis disponíveis</div>
+                    <div class="col-6">
+                        <div class="stat-card">
+                            <span class="icon-square"><i class="bi bi-house-door"></i></span>
+                            <div>
+                                <div class="stat-value">{{ total_imoveis }}</div>
+                                <div class="stat-label">Imóveis disponíveis</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <div class="col-lg-6">
                 <div class="card-flat p-4 p-md-5">
-                    <h2 class="section-title mb-1">Busca rápida</h2>
-                    <p class="text-muted small mb-4">Encontre em poucos segundos.</p>
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <span class="icon-square"><i class="bi bi-search"></i></span>
+                        <div>
+                            <h2 class="section-title mb-0">Busca rápida</h2>
+                            <p class="text-muted small mb-0">Encontre em poucos segundos.</p>
+                        </div>
+                    </div>
                     <form method="GET" action="{% url 'core:busca_rapida' %}">
                         <div class="d-flex gap-2 mb-4">
                             <input type="radio" class="btn-check" name="tipo_busca" id="tipoVaga" value="vaga" checked>
-                            <label class="btn btn-ghost flex-grow-1 btn-sm" for="tipoVaga">Vagas</label>
+                            <label class="btn btn-ghost flex-grow-1 btn-sm" for="tipoVaga"><i class="bi bi-briefcase me-1"></i>Vagas</label>
                             <input type="radio" class="btn-check" name="tipo_busca" id="tipoImovel" value="imovel">
-                            <label class="btn btn-ghost flex-grow-1 btn-sm" for="tipoImovel">Imóveis</label>
+                            <label class="btn btn-ghost flex-grow-1 btn-sm" for="tipoImovel"><i class="bi bi-house me-1"></i>Imóveis</label>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">O que você procura?</label>
@@ -59,9 +80,10 @@
     </div>
 </section>
 
-<section class="section">
+<!-- ---------- Vagas em destaque ---------- -->
+<section class="section pt-0">
     <div class="container">
-        <div class="d-flex justify-content-between align-items-end mb-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4">
             <div>
                 <span class="eyebrow">Empregos</span>
                 <h2 class="section-title mt-2">Vagas em destaque</h2>
@@ -71,12 +93,15 @@
         <div class="row g-4">
             {% for vaga in vagas_recentes %}
             <div class="col-md-4">
-                <a href="{% url 'jobs:detail' vaga.pk %}" class="card-min d-flex flex-column h-100 p-4">
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        <h3 class="h6 fw-semibold mb-0 me-2">{{ vaga.funcao }}</h3>
+                <a href="{% url 'jobs:detail' vaga.pk %}" class="card-min d-flex flex-column h-100 p-4 fade-up">
+                    <div class="d-flex align-items-start gap-3 mb-3">
+                        <span class="avatar">{{ vaga.nome_empresa|slice:":1" }}</span>
+                        <div class="flex-grow-1">
+                            <h3 class="h6 fw-semibold mb-1">{{ vaga.funcao }}</h3>
+                            <p class="text-muted small mb-0"><i class="bi bi-building me-1"></i>{{ vaga.nome_empresa }}</p>
+                        </div>
                         <span class="chip chip-accent">{{ vaga.tipo_contrato_display }}</span>
                     </div>
-                    <p class="text-muted small mb-1"><i class="bi bi-building me-1"></i>{{ vaga.nome_empresa }}</p>
                     <p class="text-muted small mb-3"><i class="bi bi-geo-alt me-1"></i>{{ vaga.endereco|default:"Paulistana - PI" }}</p>
                     <p class="text-muted small flex-grow-1">{{ vaga.descricao|truncatewords:16 }}</p>
                     <div class="divider pt-3 d-flex justify-content-between align-items-center">
@@ -98,9 +123,10 @@
     </div>
 </section>
 
+<!-- ---------- Imóveis recentes ---------- -->
 <section class="section pt-0">
     <div class="container">
-        <div class="d-flex justify-content-between align-items-end mb-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4">
             <div>
                 <span class="eyebrow">Moradia</span>
                 <h2 class="section-title mt-2">Imóveis recentes</h2>
@@ -109,21 +135,28 @@
         </div>
         <div class="row g-4">
             {% for imovel in imoveis_recentes %}
-            <div class="col-md-4">
-                <div class="card-min d-flex flex-column h-100 p-4">
-                    <h3 class="h6 fw-semibold mb-1">{{ imovel.endereco }}</h3>
-                    <p class="text-muted small mb-3"><i class="bi bi-geo-alt me-1"></i>{% if imovel.bairro %}{{ imovel.bairro }}, {% endif %}{{ imovel.cidade }}</p>
-                    <div class="fw-semibold fs-5 mb-3">R$ {{ imovel.valor_aluguel_display }}<span class="text-muted fw-normal fs-6">/mês</span></div>
-                    <div class="d-flex flex-wrap gap-3 text-muted small flex-grow-1">
-                        <span><i class="bi bi-door-open me-1"></i>{{ imovel.quartos }} quarto{{ imovel.quartos|pluralize }}</span>
-                        <span><i class="bi bi-droplet me-1"></i>{{ imovel.banheiros }} banh.</span>
-                        <span><i class="bi bi-car-front me-1"></i>{{ imovel.garagem }} vaga{{ imovel.garagem|pluralize }}</span>
+            <div class="col-md-6 col-xl-4">
+                <a href="{% url 'properties:detail' imovel.pk %}" class="card-min d-flex flex-column h-100 fade-up">
+                    <div class="card-cover">
+                        <i class="bi bi-house-door"></i>
+                        <span class="card-cover-price">R$ {{ imovel.valor_aluguel_display }}/mês</span>
                     </div>
-                    <div class="divider pt-3 d-flex flex-wrap gap-2">
-                        {% if imovel.mobiliado %}<span class="chip chip-muted">Mobiliado</span>{% endif %}
-                        {% if imovel.aceita_animais %}<span class="chip chip-muted">Aceita animais</span>{% endif %}
+                    <div class="p-4 d-flex flex-column flex-grow-1">
+                        <h3 class="h6 fw-semibold mb-1">{{ imovel.endereco }}</h3>
+                        <p class="text-muted small mb-3"><i class="bi bi-geo-alt me-1"></i>{% if imovel.bairro %}{{ imovel.bairro }}, {% endif %}{{ imovel.cidade }}</p>
+                        <div class="d-flex flex-wrap gap-3 text-muted small flex-grow-1">
+                            <span><i class="bi bi-door-open me-1"></i>{{ imovel.quartos }} quarto{{ imovel.quartos|pluralize }}</span>
+                            <span><i class="bi bi-droplet me-1"></i>{{ imovel.banheiros }} banh.</span>
+                            <span><i class="bi bi-car-front me-1"></i>{{ imovel.garagem }} vaga{{ imovel.garagem|pluralize }}</span>
+                        </div>
+                        {% if imovel.mobiliado or imovel.aceita_animais %}
+                        <div class="divider pt-3 mt-3 d-flex flex-wrap gap-2">
+                            {% if imovel.mobiliado %}<span class="chip chip-muted">Mobiliado</span>{% endif %}
+                            {% if imovel.aceita_animais %}<span class="chip chip-muted">Aceita animais</span>{% endif %}
+                        </div>
+                        {% endif %}
                     </div>
-                </div>
+                </a>
             </div>
             {% empty %}
             <div class="col-12">
@@ -138,17 +171,52 @@
     </div>
 </section>
 
+<!-- ---------- Como funciona ---------- -->
 <section class="section pt-0">
     <div class="container">
-        <div class="card-flat p-4 p-md-5">
+        <div class="text-center mb-4">
+            <span class="eyebrow">Simples assim</span>
+            <h2 class="section-title mt-2">Como funciona</h2>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="step-card fade-up">
+                    <span class="step-num">1</span>
+                    <h3 class="h6 fw-semibold mb-2">Crie sua conta</h3>
+                    <p class="text-muted small mb-0">Escolha seu perfil: candidato, empresa ou proprietário. É gratuito e leva menos de um minuto.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="step-card fade-up">
+                    <span class="step-num">2</span>
+                    <h3 class="h6 fw-semibold mb-2">Explore ou publique</h3>
+                    <p class="text-muted small mb-0">Busque vagas e imóveis com filtros, ou publique suas próprias oportunidades na região.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="step-card fade-up">
+                    <span class="step-num">3</span>
+                    <h3 class="h6 fw-semibold mb-2">Conecte-se</h3>
+                    <p class="text-muted small mb-0">Envie sua candidatura em um clique ou fale direto com o proprietário do imóvel.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ---------- Chamada final ---------- -->
+<section class="section pt-0 pb-5">
+    <div class="container">
+        <div class="cta-band fade-up">
             <div class="row align-items-center g-4">
                 <div class="col-lg-7">
-                    <h2 class="section-title mb-2">Você é empresa ou proprietário?</h2>
+                    <span class="hero-badge"><i class="bi bi-megaphone"></i>Publique gratuitamente</span>
+                    <h2 class="h3 fw-bold mt-3 mb-2">Você é empresa ou proprietário?</h2>
                     <p class="lead-min mb-0">Publique suas vagas e imóveis gratuitamente e alcance mais pessoas da região.</p>
                 </div>
                 <div class="col-lg-5 d-flex flex-column flex-sm-row gap-2 justify-content-lg-end">
-                    <a href="{% url 'jobs:create' %}" class="btn btn-accent px-4 py-2"><i class="bi bi-briefcase me-2"></i>Publicar vaga</a>
-                    <a href="{% url 'properties:create' %}" class="btn btn-ghost px-4 py-2"><i class="bi bi-house me-2"></i>Anunciar imóvel</a>
+                    <a href="{% url 'jobs:create' %}" class="btn btn-on-dark px-4 py-2"><i class="bi bi-briefcase me-2"></i>Publicar vaga</a>
+                    <a href="{% url 'properties:create' %}" class="btn btn-outline-dark-soft px-4 py-2"><i class="bi bi-house me-2"></i>Anunciar imóvel</a>
                 </div>
             </div>
         </div>

@@ -1,4 +1,4 @@
-# 🏛️ IFPI Oportunidades - Plataforma de Vagas e Imóveis
+# 🏛️ Oportunet — Plataforma de Vagas e Imóveis
 
 Plataforma web responsiva desenvolvida como **Projeto Integrador do IFPI Campus Paulistana**, com o objetivo de conectar a comunidade acadêmica e local a oportunidades de **emprego, estágio e moradia** (aluguel de imóveis).
 
@@ -8,48 +8,40 @@ Plataforma web responsiva desenvolvida como **Projeto Integrador do IFPI Campus 
 
 | Camada | Tecnologia |
 |---|---|
-| **Backend** | Python 3.8+ + Django 4.2 LTS |
-| **Frontend** | HTML5, CSS3, JavaScript + Bootstrap 5.3 (CDN) |
-| **Banco de Dados** | PostgreSQL (12+) |
-| **Armazenamento (futuro)** | Estrutura preparada para Firebase Storage (campos `FileField` / `ImageField`) |
-| **Dependências** | psycopg2-binary, dj-database-url, Pillow, python-dotenv, whitenoise |
-| **Controle de Versão** | Git / GitHub |
+| **Backend** | Python 3.12+ + Django 4.2 LTS |
+| **Banco de dados** | **Firestore** (Firebase Admin SDK) para vagas, imóveis, candidaturas e afins; **SQLite** para usuários (`CustomUser` / `PerfilCandidato`) |
+| **Autenticação** | Firebase Authentication (login/cadastro) + `CustomUser` do Django |
+| **Frontend** | HTML5, CSS3, JavaScript, Bootstrap 5.3 (CDN), Bootstrap Icons, Leaflet (mapas) |
+| **API** | Django REST Framework |
+| **Uploads** | Disco local `media/` em desenvolvimento; **Firebase Storage** opcional em produção |
+| **E-mail** | Console em desenvolvimento; SMTP em produção |
+| **Outros** | WhiteNoise, Pillow, python-dotenv, dj-database-url, psycopg2-binary (PostgreSQL opcional) |
+| **Controle de Versão** | Git / GitHub (CI com GitHub Actions) |
 
 ---
 
 ## 📁 Estrutura do Projeto
 
 ```
-projeto-sem-nome/
-├── ifpi_oportunidades/        # 📂 Configurações do projeto Django
-│   ├── __init__.py
-│   ├── settings.py            # ⚙️ Configurações (PostgreSQL, apps, media, templates)
-│   ├── urls.py                # 🔀 Rotas principais
-│   ├── wsgi.py / asgi.py
-├── users/                     # 👤 App - Gerenciamento de Usuários
-│   ├── models.py              # CustomUser + PerfilCandidato
-│   ├── admin.py, views.py, urls.py
-│   └── migrations/
-├── jobs/                      # 💼 App - Vagas e Candidaturas
-│   ├── models.py              # Vaga + Candidatura
-│   └── ...
-├── properties/                # 🏠 App - Imóveis para Aluguel
-│   ├── models.py              # Imovel
-│   └── ...
-├── core/                      # 🧭 App - Páginas Institucionais (Home, Dashboard, Auth)
-│   └── views.py (home, login, register, dashboard)
-├── templates/                 # 🎨 Templates HTML responsivos
-│   ├── base.html
-│   ├── home.html
-│   ├── login.html / register.html
-│   ├── jobs_list.html / job_detail.html
-│   ├── properties_list.html
-│   └── dashboard.html
-├── static/                    # 📦 Arquivos estáticos (CSS/JS locais, se necessário)
-├── media/                     # 🖼️ Uploads de usuários (fotos, currículos, imóveis)
+Oportunet/
+├── ifpi_oportunidades/    # ⚙️ Configurações do projeto Django
+│   ├── settings.py        # Configurações (apps, banco, storage, e-mail, produção)
+│   ├── urls.py            # Rotas principais
+│   └── wsgi.py / asgi.py
+├── core/                  # 🧭 Páginas institucionais, dashboard, moderação, helpers
+├── users/                 # 👤 CustomUser + PerfilCandidato
+├── jobs/                  # 💼 Vagas, candidaturas, favoritos, alertas, mensagens
+├── properties/            # 🏠 Imóveis para aluguel
+├── api/                   # 🔌 Endpoints REST (Django REST Framework)
+├── templates/             # 🎨 Templates HTML responsivos
+├── static/                # 📦 Arquivos estáticos locais
+├── tests/                 # 🧪 Suíte de testes automatizados
+├── .github/workflows/     # 🔁 CI (GitHub Actions)
+├── media/                 # 🖼️ Uploads locais (fotos, currículos, imóveis)
 ├── manage.py
 ├── requirements.txt
 ├── .env.example
+├── ROADMAP.md             # 📋 Melhorias planejadas/implementadas
 └── README.md
 ```
 
@@ -57,145 +49,84 @@ projeto-sem-nome/
 
 ## ✅ Pré-requisitos
 
-Antes de começar, certifique-se de ter instalado em sua máquina:
-
-1. **Python 3.8+** (recomendado 3.10 ou 3.11) — baixe em [python.org/downloads](https://www.python.org/downloads/)
-2. **PostgreSQL 12+** instalado e rodando localmente:
-   - **Windows:** baixe em [postgresql.org/download/windows](https://www.postgresql.org/download/windows/) (durante a instalação, anote a senha do superusuário `postgres`)
-   - **Linux (Debian/Ubuntu):** `sudo apt install postgresql postgresql-contrib`
-3. **Pip** (geralmente já vem com o Python) e **venv** (ambiente virtual)
-4. (Opcional) **pgAdmin** ou **DBeaver** para gerenciar o banco visualmente.
+1. **Python 3.12+** — [python.org/downloads](https://www.python.org/downloads/)
+2. **Conta/projeto no Firebase** com **Firestore** e **Authentication** habilitados
+3. O arquivo **`serviceAccountKey.json`** (credencial do Admin SDK) na raiz do projeto
+4. (Opcional) **PostgreSQL 12+** caso queira usar outro banco para os usuários
 
 ---
 
-## 🚀 Passo a Passo para Rodar o Projeto
+## 🚀 Passo a Passo
 
-### 1️⃣. Clone / Baixe o projeto
+### 1️⃣. Clone o projeto
 
 ```bash
-# Se estiver usando Git
-git clone <seu-repositorio>
-cd projeto-sem-nome
+git clone https://github.com/darsobrio/projeto-integrado.git
+cd Oportunet
 ```
 
-### 2️⃣. Crie um Banco de Dados PostgreSQL
-
-Abra o **pgAdmin** ou o terminal `psql` (SQL Shell) e execute:
-
-```sql
--- Criação do banco
-CREATE DATABASE ifpi_oportunidades;
-
--- (Opcional) Crie um usuário dedicado para a aplicação
-CREATE USER ifpi_user WITH PASSWORD 'sua_senha_forte';
-GRANT ALL PRIVILEGES ON DATABASE ifpi_oportunidades TO ifpi_user;
-ALTER DATABASE ifpi_oportunidades OWNER TO ifpi_user;
-```
-
-> 💡 **Anotações importantes:** Anote o **nome do banco**, **usuário** e **senha** — você precisará deles na próxima etapa.
-
-### 3️⃣. Crie e ative um Ambiente Virtual (venv)
+### 2️⃣. Crie e ative um ambiente virtual (venv)
 
 ```powershell
-# Windows (PowerShell / CMD)
+# Windows (PowerShell)
 python -m venv .venv
-.\.venv\Scripts\activate
+.\.venv\Scripts\Activate.ps1
 
-# Linux / macOS (bash)
+# Linux / macOS
 python3 -m venv .venv
 source .venv/bin/activate
 ```
 
-Se deu certo, você verá **`(.venv)`** no início do seu prompt.
-
-### 4️⃣. Instale as dependências do projeto
+### 3️⃣. Instale as dependências
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Isso instalará: **Django 4.2 LTS**, **psycopg2-binary**, **dj-database-url**, **Pillow**, **python-dotenv** e **whitenoise**.
-
-### 5️⃣. Configure as variáveis de ambiente (.env)
-
-Copie o arquivo de exemplo e edite com os dados do seu banco:
+### 4️⃣. Configure as variáveis de ambiente (.env)
 
 ```powershell
-# Windows
-copy .env.example .env
-
-# Linux / macOS
-cp .env.example .env
+copy .env.example .env   # Windows
+cp .env.example .env     # Linux/macOS
 ```
 
-Abra o arquivo **`.env`** em um editor de texto e preencha:
+Edite o `.env` conforme necessário (veja os comentários do [.env.example](.env.example)). No desenvolvimento, o padrão `DB_ENGINE=sqlite` já funciona.
 
-```dotenv
-# .env
+> ⚠️ **Nunca versione o `.env` nem o `serviceAccountKey.json`** — já estão no `.gitignore`.
 
-# URL de conexão com o PostgreSQL no formato:
-# postgres://USUARIO:SENHA@HOST:PORTA/NOME_BANCO
-DATABASE_URL=postgres://ifpi_user:sua_senha_forte@localhost:5432/ifpi_oportunidades
-# OU, se você usou o usuário padrão postgres:
-# DATABASE_URL=postgres://postgres:SUA_SENHA_POSTGRES@localhost:5432/ifpi_oportunidades
+### 5️⃣. Coloque a credencial do Firebase
 
-# Chave secreta do Django (altere para algo aleatório e longo em produção!)
-SECRET_KEY=django-insecure-altere-essa-chave-em-producao-para-algo-seguro-e-longo-12345
+Baixe o `serviceAccountKey.json` no console do Firebase (Configurações do projeto → Contas de serviço) e coloque-o **na raiz do projeto**. O site inicializa o Firebase Admin SDK ao importar o app `core`.
 
-# Modo debug: True em desenvolvimento, False em produção
-DEBUG=True
-```
-
-> ⚠️ **Nunca compartilhe nem envie o arquivo `.env` para o GitHub** (ele já está incluído no `.gitignore`).
-
-### 6️⃣. Rode as migrações do banco de dados
-
-As migrações criarão todas as tabelas (`CustomUser`, `PerfilCandidato`, `Vaga`, `Candidatura`, `Imovel`, etc.):
+### 6️⃣. Rode as migrações
 
 ```bash
-# 1. Gere os arquivos de migração dos apps (caso ainda não existam)
-python manage.py makemigrations users jobs properties core
-
-# 2. Aplique todas as migrações no PostgreSQL
 python manage.py migrate
 ```
 
-Se aparecer "OK" para todas as migrações, deu tudo certo! 🎉
-
 ### 7️⃣. Crie um superusuário (Admin)
-
-Para acessar o painel administrativo do Django em `/admin/`:
 
 ```bash
 python manage.py createsuperuser
 ```
 
-Preencha:
-- **E-mail:** seu email (ou `admin@ifpi.edu.br`)
-- **Username:** ex: `admin`
-- **Senha:** uma senha forte
-- Confirme a senha.
-
-### 8️⃣. (Opcional) Colete arquivos estáticos
-
-Apenas necessário em produção, mas pode testar:
-
-```bash
-python manage.py collectstatic
-```
-
-### 9️⃣. Suba o servidor de desenvolvimento local 🚀
+### 8️⃣. Suba o servidor de desenvolvimento 🚀
 
 ```bash
 python manage.py runserver
 ```
 
-Por padrão, o servidor roda em **http://127.0.0.1:8000/** — abra essa URL no seu navegador.
+Acesse **http://127.0.0.1:8000/**.
 
-Para rodar em outra porta, ex: `8080`:
+---
+
+## 🧪 Testes
+
 ```bash
-python manage.py runserver 8080
+python manage.py test
 ```
+
+A suíte cobre validação de CPF/CNPJ, formatação de valores, paginação, conversão dos documentos do Firestore e os serializers da API. O CI (`.github/workflows/ci.yml`) roda `manage.py check` e os testes a cada *push* e *pull request*.
 
 ---
 
@@ -203,77 +134,55 @@ python manage.py runserver 8080
 
 | Rota | Descrição |
 |---|---|
-| `/` | 🏠 Página Inicial (Home) |
-| `/vagas/` | 💼 Lista de Vagas de Emprego |
+| `/` | 🏠 Página Inicial |
+| `/vagas/` | 💼 Lista de Vagas |
 | `/vagas/<id>/` | 📄 Detalhes de uma Vaga |
-| `/imoveis/` | 🏠 Lista de Imóveis para Alugar |
-| `/dashboard/` | 🎛️ Painel do Usuário (Dashboard) |
-| `/cadastro/` | 📝 Formulário de Cadastro |
-| `/login/` | 🔐 Tela de Login |
+| `/imoveis/` | 🏠 Lista de Imóveis |
+| `/dashboard/` | 🎛️ Painel do Usuário |
+| `/usuarios/perfil/` | 👤 Meu perfil (dados, currículo, segurança) |
+| `/cadastro/` · `/login/` | 📝 Cadastro e 🔐 Login |
+| `/moderacao/` | 🛡️ Painel de moderação (equipe) |
+| `/api/vagas/` · `/api/imoveis/` | 🔌 API REST (JSON) |
+| `/api/candidaturas/` | 🔌 Candidaturas do usuário (requer login) |
 | `/admin/` | ⚙️ Painel Administrativo do Django |
 
 ---
 
-## 🎯 Funcionalidades Implementadas (Semanas 1 a 4)
+## 🎯 Funcionalidades
 
-### ✅ Backend / Banco de Dados
-- [x] **Projeto Django organizado** com 4 apps (`users`, `jobs`, `properties`, `core`)
-- [x] **CustomUser** (Usuário customizado): Nome completo, CPF, Data Nascimento, Telefone, Foto de Perfil, Endereço, Cidade e **Tipo de Usuário** (Candidato / Empresa / Proprietário)
-- [x] **PerfilCandidato**: Sobre mim, Escolaridade, Instituição, Cursos, Formação, Diplomas, Experiências, Habilidades, Idiomas, Currículo PDF e Link do Portfólio
-- [x] **Vaga + Candidatura**: Todos os campos e choices (Tipo Contrato, Modalidade, Status Vaga, Status Candidatura)
-- [x] **Imovel**: Todos os campos, incluindo Mobiliado, Aceita Animais, Garagem, Área, etc.
-- [x] `settings.py` **configurado para PostgreSQL** via `dj-database-url`, apps instaladas, `AUTH_USER_MODEL`, `MEDIA_ROOT` / `MEDIA_URL` (preparado para Firebase Storage depois)
-- [x] **Admin customizado** para gerenciar todos os modelos
-
-### ✅ Frontend / Protótipos (HTML + Bootstrap 5 responsivo)
-- [x] `base.html` — Layout base com Bootstrap Icons, header dinâmico, footer
-- [x] `home.html` — Hero com busca rápida, destaques de vagas e imóveis, CTAs
-- [x] `register.html` — Formulário com **seletor de perfil** (Candidato / Empresa / Proprietário)
-- [x] `login.html` — Formulário de login com "Lembrar-me" e Google
-- [x] `jobs_list.html` — Filtros (cargo, cidade, salário, tipo contrato, modalidade) + cards
-- [x] `job_detail.html` — Informações completas + botão de candidatura + estatísticas
-- [x] `properties_list.html` — Filtros (local, preço, quartos, mobiliado, pet friendly) + galeria
-- [x] `dashboard.html` — **3 visões condicionais**:
-  - 🧑‍🎓 **Candidato**: cards resumo, histórico de candidaturas, completude do perfil, vagas recomendadas
-  - 🏢 **Empresa**: cards estatísticos, tabela de vagas publicadas, ações
-  - 🏠 **Proprietário**: cards estatísticos, tabela de imóveis, ações
-
-Todos os templates são **100% responsivos** (desktop, tablet e mobile). 📱💻
+- **Cadastro/login** com Firebase Auth, três tipos de conta (candidato, empresa, proprietário)
+- **Vagas**: publicar (empresa), filtrar, favoritar, alertas por filtro salvo, candidatar-se, compartilhar
+- **Imóveis**: publicar (proprietário), galeria de fotos, mapa (Leaflet), filtro por proximidade
+- **Perfil do candidato**: escolaridade, experiências, habilidades, currículo em PDF e barra de completude
+- **Candidaturas**: acompanhamento de status pela empresa, com notificação por e-mail
+- **Mensagens** entre empresa e candidato dentro da plataforma
+- **Moderação**: denúncia de anúncio, verificação de empresa (selo), limite de anúncios por conta
+- **API REST** para futuros apps móveis
 
 ---
 
-## 📖 Próximos Passos (Semanas Futuras)
+## 📋 Roadmap
 
-- [ ] Implementar autenticação real (cadastro / login / logout com `django.contrib.auth`)
-- [ ] Views de CRUD reais para Vagas e Imóveis (publicar, editar, excluir)
-- [ ] Lógica de candidatura a vagas com envio de e-mail
-- [ ] Upload de arquivos integrado ao **Firebase Storage**
-- [ ] Formulários reais com `django.forms` e validação de CPF/CNPJ
-- [ ] API REST com **Django REST Framework** (para futuros apps móveis)
-- [ ] Deploy em produção (ex: Heroku, Render, Vercel, Fly.io)
+As melhorias planejadas e já implementadas estão registradas em [ROADMAP.md](ROADMAP.md).
 
 ---
 
-## 🐛 Troubleshooting Comum
+## 🐛 Troubleshooting
 
-### ❌ Erro: `django.db.utils.OperationalError: FATAL: password authentication failed`
-**Solução:** Verifique o arquivo `.env` — a `DATABASE_URL` deve ter usuário e senha corretos do PostgreSQL. Teste o login no pgAdmin/psql.
+### ❌ `ModuleNotFoundError: No module named 'django'`
+O ambiente virtual não está ativado. Repita o **Passo 2**.
 
-### ❌ Erro: `relation "users_customuser" does not exist`
-**Solução:** Você esqueceu de rodar as migrações. Execute:
-```bash
-python manage.py makemigrations
-python manage.py migrate
+### ❌ `ModuleNotFoundError: No module named 'firebase_admin'`
+Provavelmente há **outro venv ativado** por cima do local. Rode `deactivate` e ative o `.venv` do projeto.
+
+### ❌ Erro ao inicializar o Firebase (credencial)
+Confirme que o **`serviceAccountKey.json`** está na raiz do projeto.
+
+### ❌ Porta 8000 ocupada após parar o servidor
+O subprocesso do `StatReloader` pode segurar a porta. Identifique e encerre o processo:
+```powershell
+Get-NetTCPConnection -LocalPort 8000 -State Listen
 ```
-
-### ❌ Erro no Windows: `psycopg2.OperationalError: could not translate host name`
-**Solução:** Certifique-se de que o **serviço PostgreSQL está iniciado** (procure por "services" no Windows e inicie o serviço `postgresql-x64-XX`).
-
-### ❌ Erro: `ModuleNotFoundError: No module named 'django'`
-**Solução:** Seu ambiente virtual não está ativado! Repita o **Passo 3** (`.\.venv\Scripts\activate` no Windows).
-
-### ❌ Problemas com caracteres acentuados no PostgreSQL
-**Solução:** Certifique-se de que o banco foi criado com **encoding UTF8** (no pgAdmin, o padrão já é UTF-8).
 
 ---
 

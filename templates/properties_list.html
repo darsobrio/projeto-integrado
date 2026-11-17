@@ -1,21 +1,25 @@
 {% extends 'base.html' %}
+{% load querystring %}
 {% block title %}Imóveis para Aluguel - Oportunet{% endblock %}
 
 {% block content %}
-<section class="section pb-0">
+<section class="page-band">
     <div class="container">
         <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
             <div>
                 <span class="eyebrow">Moradia</span>
                 <h1 class="page-title mt-2 mb-1">Imóveis para alugar</h1>
-                <p class="text-muted mb-0">{{ imoveis|length }} imóve{{ imoveis|length|pluralize:"l,is" }} encontrado{{ imoveis|length|pluralize }}</p>
+                <p class="text-muted mb-0">{{ paginacao.total_itens }} imóve{{ paginacao.total_itens|pluralize:"l,is" }} encontrado{{ paginacao.total_itens|pluralize }}</p>
             </div>
-            {% if user.is_authenticated and user.tipo_usuario == 'proprietario' %}
+            {% if user.is_authenticated %}
                 <a href="{% url 'properties:create' %}" class="btn btn-accent"><i class="bi bi-plus-lg me-1"></i>Anunciar imóvel</a>
             {% endif %}
         </div>
 
-        <form method="GET" class="card-flat p-3 p-md-4 mb-4">
+        <form method="GET" id="formFiltros" class="card-flat p-3 p-md-4">
+            <input type="hidden" name="lat" id="campoLat" value="{{ filtro_lat }}">
+            <input type="hidden" name="lng" id="campoLng" value="{{ filtro_lng }}">
+            <input type="hidden" name="raio" id="campoRaio" value="{{ filtro_raio|default:'25' }}">
             <div class="row g-3 align-items-end">
                 <div class="col-md-6">
                     <label class="form-label">Palavra-chave</label>
@@ -53,48 +57,110 @@
                         <label class="form-check-label" for="fMobiliado">Mobiliado</label>
                     </div>
                 </div>
-                <div class="col-lg-2 d-grid">
+                <div class="col-6 col-lg-2">
+                    <label class="form-label">Ordenar por</label>
+                    <select name="ordem" class="form-select">
+                        {% for valor, rotulo in ordenacao_choices %}
+                            <option value="{{ valor }}" {% if filtro_ordem == valor %}selected{% endif %}>{{ rotulo }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-lg-2 d-grid gap-2">
                     <button class="btn btn-accent py-2" type="submit"><i class="bi bi-search me-1"></i>Buscar</button>
+                    <button class="btn btn-ghost py-2" type="button" id="btnPertoDeMim"><i class="bi bi-crosshair me-1"></i>Perto de mim</button>
                 </div>
             </div>
+            {% if modo_proximidade %}
+                <div class="d-flex flex-wrap align-items-center gap-2 mt-3">
+                    <span class="chip chip-info"><i class="bi bi-geo-alt"></i>Perto de você (raio de {{ filtro_raio|default:"25" }} km)</span>
+                    <a href="{% url 'properties:list' %}" class="small text-muted"><i class="bi bi-x-circle me-1"></i>Remover proximidade</a>
+                </div>
+            {% endif %}
             {% if filtro_q or filtro_local or filtro_preco_min or filtro_preco_max or filtro_quartos or filtro_aceita_animais or filtro_mobiliado %}
-                <a href="{% url 'properties:list' %}" class="small text-muted d-inline-block mt-3"><i class="bi bi-x-circle me-1"></i>Limpar filtros</a>
+                <div class="d-flex flex-wrap align-items-center gap-2 mt-3">
+                    <span class="text-muted small me-1"><i class="bi bi-funnel me-1"></i>Filtros aplicados:</span>
+                    {% if filtro_q %}<a href="?{% querystring q=None %}" class="chip chip-filtro" title="Remover busca"><span class="chip-clip">Busca: {{ filtro_q }}</span> <i class="bi bi-x-lg"></i></a>{% endif %}
+                    {% if filtro_local %}<a href="?{% querystring local=None %}" class="chip chip-filtro" title="Remover local"><span class="chip-clip">Local: {{ filtro_local }}</span> <i class="bi bi-x-lg"></i></a>{% endif %}
+                    {% if filtro_preco_min %}<a href="?{% querystring preco_min=None %}" class="chip chip-filtro" title="Remover preço mínimo">Preço mín. R$ {{ filtro_preco_min }} <i class="bi bi-x-lg"></i></a>{% endif %}
+                    {% if filtro_preco_max %}<a href="?{% querystring preco_max=None %}" class="chip chip-filtro" title="Remover preço máximo">Preço máx. R$ {{ filtro_preco_max }} <i class="bi bi-x-lg"></i></a>{% endif %}
+                    {% if filtro_quartos %}<a href="?{% querystring quartos=None %}" class="chip chip-filtro" title="Remover quartos">Quartos: {{ filtro_quartos }}+ <i class="bi bi-x-lg"></i></a>{% endif %}
+                    {% if filtro_aceita_animais %}<a href="?{% querystring aceita_animais=None %}" class="chip chip-filtro" title="Remover aceita animais">Aceita animais <i class="bi bi-x-lg"></i></a>{% endif %}
+                    {% if filtro_mobiliado %}<a href="?{% querystring mobiliado=None %}" class="chip chip-filtro" title="Remover mobiliado">Mobiliado <i class="bi bi-x-lg"></i></a>{% endif %}
+                    <a href="{% url 'properties:list' %}" class="small text-muted ms-1">Limpar tudo</a>
+                </div>
             {% endif %}
         </form>
+    </div>
+</section>
+
+<section class="section pt-4 pb-5">
+    <div class="container">
+        {% if mapa_imoveis %}
+        <div class="mb-4">
+            <div id="mapaImoveis" style="height:340px;border-radius:16px;border:1px solid var(--border);"></div>
+            <div class="input-hint mt-1">Cada marcador é um imóvel com localização cadastrada. Clique para abrir os detalhes.</div>
+        </div>
+        {% endif %}
 
         <div class="row g-4">
             {% for imovel in imoveis %}
             <div class="col-md-6 col-xl-4">
-                <div class="card-min d-flex flex-column h-100 p-4">
-                    <h2 class="h6 fw-semibold mb-1">{{ imovel.endereco }}</h2>
-                    <p class="text-muted small mb-3"><i class="bi bi-geo-alt me-1"></i>{% if imovel.bairro %}{{ imovel.bairro }}, {% endif %}{{ imovel.cidade }}</p>
-
-                    <div class="fs-4 fw-bold mb-1">R$ {{ imovel.valor_aluguel_display }}<span class="text-muted fw-normal fs-6">/mês</span></div>
-                    {% if imovel.valor_condominio_display %}<small class="text-muted d-block mb-3">+ R$ {{ imovel.valor_condominio_display }} de condomínio</small>{% endif %}
-
-                    <div class="d-flex flex-wrap gap-3 text-muted small border-top pt-3 mt-2 mb-3">
-                        <span><i class="bi bi-door-open me-1"></i>{{ imovel.quartos }} quarto{{ imovel.quartos|pluralize }}</span>
-                        <span><i class="bi bi-droplet me-1"></i>{{ imovel.banheiros }} banh.</span>
-                        <span><i class="bi bi-car-front me-1"></i>{{ imovel.garagem }} vaga{{ imovel.garagem|pluralize }}</span>
-                        {% if imovel.area_m2 %}<span><i class="bi bi-ruler-combined me-1"></i>{{ imovel.area_m2 }} m²</span>{% endif %}
-                    </div>
-
-                    {% if imovel.descricao %}
-                        <p class="text-muted small flex-grow-1">{{ imovel.descricao|truncatewords:18 }}</p>
-                    {% else %}<div class="flex-grow-1"></div>{% endif %}
-
-                    <div class="d-flex flex-wrap gap-2 mb-3">
-                        {% if imovel.mobiliado %}<span class="chip chip-muted">Mobiliado</span>{% endif %}
-                        {% if imovel.aceita_animais %}<span class="chip chip-muted">Aceita animais</span>{% endif %}
-                    </div>
-
-                    <div class="d-flex flex-column gap-2 mt-auto">
-                        <a href="{% url 'properties:detail' imovel.pk %}" class="btn btn-accent w-100">Ver detalhes</a>
-                        {% if imovel.contato_proprietario %}
-                            <a href="tel:{{ imovel.contato_proprietario }}" class="btn btn-ghost w-100">
-                                <i class="bi bi-telephone me-1"></i>{{ imovel.contato_proprietario }}
-                            </a>
+                <div class="card-min d-flex flex-column h-100 fade-up">
+                    <div class="card-cover{% if imovel.foto_url %} card-cover--photo{% endif %}">
+                        {% if imovel.foto_url %}
+                            <img src="{{ imovel.foto_url }}" alt="Foto do imóvel em {{ imovel.endereco }}" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover;">
+                        {% else %}
+                            <i class="bi bi-house-door"></i>
                         {% endif %}
+                        <span class="card-cover-price">R$ {{ imovel.valor_aluguel_display }}/mês</span>
+                    </div>
+
+                    <div class="p-4 d-flex flex-column flex-grow-1">
+                        <h2 class="h6 fw-semibold mb-1">{{ imovel.endereco }}</h2>
+                        <p class="text-muted small mb-3"><i class="bi bi-geo-alt me-1"></i>{% if imovel.bairro %}{{ imovel.bairro }}, {% endif %}{{ imovel.cidade }}</p>
+                        {% if imovel.distancia_km %}<span class="chip chip-info mb-3 d-inline-flex"><i class="bi bi-geo"></i>a {{ imovel.distancia_km }} km de você</span>{% endif %}
+
+                        {% if imovel.valor_condominio_display %}
+                            <small class="text-muted d-block mb-3">+ R$ {{ imovel.valor_condominio_display }} de condomínio</small>
+                        {% endif %}
+
+                        <div class="d-flex flex-wrap gap-3 text-muted small border-top pt-3 mt-2 mb-3">
+                            <span><i class="bi bi-door-open me-1"></i>{{ imovel.quartos }} quarto{{ imovel.quartos|pluralize }}</span>
+                            <span><i class="bi bi-droplet me-1"></i>{{ imovel.banheiros }} banh.</span>
+                            <span><i class="bi bi-car-front me-1"></i>{{ imovel.garagem }} vaga{{ imovel.garagem|pluralize }}</span>
+                            {% if imovel.area_m2 %}<span><i class="bi bi-bounding-box me-1"></i>{{ imovel.area_m2 }} m²</span>{% endif %}
+                        </div>
+
+                        {% if imovel.descricao %}
+                            <p class="text-muted small flex-grow-1">{{ imovel.descricao|truncatewords:18 }}</p>
+                        {% else %}<div class="flex-grow-1"></div>{% endif %}
+
+                        {% if imovel.mobiliado or imovel.aceita_animais %}
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            {% if imovel.mobiliado %}<span class="chip chip-muted"><i class="bi bi-lamp"></i>Mobiliado</span>{% endif %}
+                            {% if imovel.aceita_animais %}<span class="chip chip-muted"><i class="bi bi-heart"></i>Aceita animais</span>{% endif %}
+                        </div>
+                        {% endif %}
+
+                        <div class="d-flex flex-column gap-2 mt-auto">
+                            <div class="d-flex gap-2">
+                                {% if user.is_authenticated %}
+                                <form method="POST" action="{% url 'properties:favoritar' imovel.pk %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                    <button type="submit" class="btn btn-ghost px-3 h-100" title="{% if imovel.pk in favoritos %}Remover dos favoritos{% else %}Salvar nos favoritos{% endif %}">
+                                        <i class="bi {% if imovel.pk in favoritos %}bi-heart-fill text-accent{% else %}bi-heart{% endif %}"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                                <a href="{% url 'properties:detail' imovel.pk %}" class="btn btn-accent flex-grow-1">Ver detalhes</a>
+                            </div>
+                            {% if imovel.contato_proprietario %}
+                                <a href="tel:{{ imovel.contato_proprietario }}" class="btn btn-ghost w-100">
+                                    <i class="bi bi-telephone me-1"></i>{{ imovel.contato_proprietario }}
+                                </a>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -108,6 +174,70 @@
             </div>
             {% endfor %}
         </div>
+        {% include '_paginacao.html' %}
     </div>
 </section>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+{% endblock %}
+
+{% block extra_js %}
+{{ mapa_imoveis|json_script:"dadosImoveis" }}
+{{ mapa_centro|json_script:"centroMapa" }}
+<script>
+(function () {
+    const btn = document.getElementById('btnPertoDeMim');
+    const form = document.getElementById('formFiltros');
+
+    if (btn && form) {
+        btn.addEventListener('click', function () {
+            if (!navigator.geolocation) {
+                alert('Seu navegador não suporta geolocalização.');
+                return;
+            }
+            btn.disabled = true;
+            navigator.geolocation.getCurrentPosition(function (posicao) {
+                document.getElementById('campoLat').value = posicao.coords.latitude.toFixed(6);
+                document.getElementById('campoLng').value = posicao.coords.longitude.toFixed(6);
+                form.submit();
+            }, function () {
+                btn.disabled = false;
+                alert('Não foi possível obter a sua localização.');
+            });
+        });
+    }
+})();
+</script>
+{% if mapa_imoveis %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function () {
+    const el = document.getElementById('mapaImoveis');
+    if (!el || typeof L === 'undefined') return;
+
+    const dadosEl = document.getElementById('dadosImoveis');
+    const centroEl = document.getElementById('centroMapa');
+    const pontos = dadosEl ? JSON.parse(dadosEl.textContent) : [];
+    const centro = centroEl ? JSON.parse(centroEl.textContent) : { lat: -8.3828, lng: -41.4464 };
+
+    const mapa = L.map('mapaImoveis').setView([centro.lat, centro.lng], pontos.length ? 12 : 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap'
+    }).addTo(mapa);
+
+    pontos.forEach(function (p) {
+        L.marker([p.lat, p.lng])
+            .addTo(mapa)
+            .bindPopup(
+                '<strong>' + p.endereco + '</strong><br>' +
+                (p.cidade || '') + '<br>R$ ' + (p.valor || '-') + '/mês<br>' +
+                '<a href="' + p.url + '">Ver detalhes</a>'
+            );
+    });
+})();
+</script>
+{% endif %}
 {% endblock %}

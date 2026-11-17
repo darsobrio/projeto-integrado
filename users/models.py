@@ -34,6 +34,11 @@ class CustomUser(AbstractUser):
         choices=TIPO_USUARIO_CHOICES,
         default=CANDIDATO,
     )
+    verificado = models.BooleanField(
+        'Verificado',
+        default=False,
+        help_text='Contas verificadas exibem o selo de confiança nos anúncios.',
+    )
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']

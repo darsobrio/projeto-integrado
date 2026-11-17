@@ -2,82 +2,111 @@
 {% block title %}Painel - Oportunet{% endblock %}
 
 {% block content %}
-<section class="section pb-0">
+<section class="page-band">
     <div class="container">
-        <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+        <span class="eyebrow">
+            {% if usuario.tipo_usuario == 'empresa' %}Painel da empresa
+            {% elif usuario.tipo_usuario == 'proprietario' %}Painel do proprietário
+            {% else %}Painel do candidato{% endif %}
+        </span>
+        <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mt-2">
             <div>
-                <span class="eyebrow">
-                    {% if usuario.tipo_usuario == 'empresa' %}Painel da empresa
-                    {% elif usuario.tipo_usuario == 'proprietario' %}Painel do proprietário
-                    {% else %}Painel do candidato{% endif %}
-                </span>
-                <h1 class="page-title mt-2 mb-1">Olá, {{ usuario.nome_completo|default:usuario.email|truncatewords:2 }}</h1>
+                <h1 class="page-title mb-1">Olá, {{ usuario.nome_completo|default:usuario.email|truncatewords:2 }}</h1>
                 <p class="text-muted mb-0">Bem-vindo de volta ao Oportunet.</p>
             </div>
-            <div class="d-flex gap-2">
+            <div class="d-flex flex-wrap gap-2 mt-3 mt-lg-0">
                 {% if usuario.tipo_usuario == 'empresa' %}
-                    <a href="{% url 'jobs:create' %}" class="btn btn-accent"><i class="bi bi-plus-lg me-1"></i>Publicar vaga</a>
+                    <a href="{% url 'jobs:candidaturas' %}" class="btn btn-ghost btn-mob-full"><i class="bi bi-kanban me-1"></i>Candidaturas</a>
+                    <a href="{% url 'jobs:mensagens' %}" class="btn btn-ghost btn-mob-full"><i class="bi bi-chat-dots me-1"></i>Mensagens</a>
+                    <a href="{% url 'properties:create' %}" class="btn btn-ghost btn-mob-full"><i class="bi bi-house-add me-1"></i>Anunciar imóvel</a>
+                    <a href="{% url 'jobs:create' %}" class="btn btn-accent btn-mob-full"><i class="bi bi-plus-lg me-1"></i>Publicar vaga</a>
                 {% elif usuario.tipo_usuario == 'proprietario' %}
-                    <a href="{% url 'properties:create' %}" class="btn btn-accent"><i class="bi bi-plus-lg me-1"></i>Anunciar imóvel</a>
+                    <a href="{% url 'properties:create' %}" class="btn btn-accent btn-mob-full"><i class="bi bi-plus-lg me-1"></i>Anunciar imóvel</a>
                 {% else %}
-                    <a href="{% url 'jobs:list' %}" class="btn btn-accent"><i class="bi bi-search me-1"></i>Buscar vagas</a>
+                    <a href="{% url 'jobs:minhas_candidaturas' %}" class="btn btn-ghost btn-mob-full"><i class="bi bi-send me-1"></i>Minhas candidaturas</a>
+                    <a href="{% url 'jobs:mensagens' %}" class="btn btn-ghost btn-mob-full"><i class="bi bi-chat-dots me-1"></i>Mensagens</a>
+                    <a href="{% url 'jobs:favoritos' %}" class="btn btn-ghost btn-mob-full"><i class="bi bi-heart me-1"></i>Vagas favoritas</a>
+                    <a href="{% url 'properties:favoritos' %}" class="btn btn-ghost btn-mob-full"><i class="bi bi-house-heart me-1"></i>Imóveis salvos</a>
+                    <a href="{% url 'jobs:alertas' %}" class="btn btn-ghost btn-mob-full"><i class="bi bi-bell me-1"></i>Alertas</a>
+                    <a href="{% url 'properties:create' %}" class="btn btn-ghost btn-mob-full"><i class="bi bi-house-add me-1"></i>Anunciar imóvel</a>
+                    <a href="{% url 'jobs:list' %}" class="btn btn-accent btn-mob-full"><i class="bi bi-search me-1"></i>Buscar vagas</a>
                 {% endif %}
             </div>
         </div>
+    </div>
+</section>
 
-        <div class="row g-3 mb-4">
+<section class="section pt-4">
+    <div class="container">
+
+        <div class="row g-3 mb-5">
             <div class="col-6 col-lg-3">
-                <div class="card-flat p-3 h-100">
-                    <div class="text-muted small">Vagas abertas</div>
-                    <div class="fs-4 fw-bold">{{ total_vagas }}</div>
-                </div>
-            </div>
-            <div class="col-6 col-lg-3">
-                <div class="card-flat p-3 h-100">
-                    <div class="text-muted small">Imóveis disponíveis</div>
-                    <div class="fs-4 fw-bold">{{ total_imoveis }}</div>
-                </div>
-            </div>
-            <div class="col-6 col-lg-3">
-                <div class="card-flat p-3 h-100">
-                    <div class="text-muted small">Comunidade</div>
-                    <div class="fs-4 fw-bold">{{ total_usuarios }}</div>
-                </div>
-            </div>
-            <div class="col-6 col-lg-3">
-                <div class="card-flat p-3 h-100">
-                    <div class="text-muted small">
-                        {% if usuario.tipo_usuario == 'empresa' %}Minhas vagas
-                        {% elif usuario.tipo_usuario == 'proprietario' %}Meus imóveis
-                        {% else %}Minhas candidaturas{% endif %}
+                <div class="stat-card">
+                    <span class="icon-square"><i class="bi bi-briefcase"></i></span>
+                    <div>
+                        <div class="stat-label">Vagas abertas</div>
+                        <div class="stat-value">{{ total_vagas }}</div>
                     </div>
-                    <div class="fs-4 fw-bold">
-                        {% if usuario.tipo_usuario == 'empresa' %}{{ vagas|length }}
-                        {% elif usuario.tipo_usuario == 'proprietario' %}{{ imoveis|length }}
-                        {% else %}{{ candidaturas|length }}{% endif %}
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="stat-card">
+                    <span class="icon-square"><i class="bi bi-house-door"></i></span>
+                    <div>
+                        <div class="stat-label">Imóveis disponíveis</div>
+                        <div class="stat-value">{{ total_imoveis }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="stat-card">
+                    <span class="icon-square"><i class="bi bi-people"></i></span>
+                    <div>
+                        <div class="stat-label">Comunidade</div>
+                        <div class="stat-value">{{ total_usuarios }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="stat-card">
+                    <span class="icon-square"><i class="bi bi-person-badge"></i></span>
+                    <div>
+                        <div class="stat-label">
+                            {% if usuario.tipo_usuario == 'empresa' %}Minhas vagas
+                            {% elif usuario.tipo_usuario == 'proprietario' %}Meus imóveis
+                            {% else %}Minhas candidaturas{% endif %}
+                        </div>
+                        <div class="stat-value">
+                            {% if usuario.tipo_usuario == 'empresa' %}{{ vagas|length }}
+                            {% elif usuario.tipo_usuario == 'proprietario' %}{{ imoveis|length }}
+                            {% else %}{{ candidaturas|length }}{% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         {% if usuario.tipo_usuario == 'empresa' %}
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h2 class="section-title">Minhas vagas</h2>
-                <span class="chip chip-muted">{{ qtd_vagas_abertas }} aberta{{ qtd_vagas_abertas|pluralize }}</span>
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                <h2 class="section-title"><i class="bi bi-megaphone text-accent me-2"></i>Minhas vagas</h2>
+                <span class="chip chip-ok"><i class="bi bi-broadcast"></i>{{ qtd_vagas_abertas }} aberta{{ qtd_vagas_abertas|pluralize }}</span>
             </div>
             <div class="d-flex flex-column gap-3 mb-5">
                 {% for vaga in vagas %}
-                <div class="card-flat p-4">
+                <div class="list-row p-3 p-md-4">
                     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
-                        <div>
-                            <div class="fw-semibold d-flex align-items-center gap-2">
-                                {{ vaga.funcao }}
-                                <span class="chip chip-muted">{{ vaga.status_display }}</span>
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="icon-square"><i class="bi bi-briefcase"></i></span>
+                            <div>
+                                <div class="fw-semibold d-flex align-items-center gap-2 flex-wrap">
+                                    {{ vaga.funcao }}
+                                    <span class="chip {% if vaga.status == 'aberta' %}chip-ok{% else %}chip-muted{% endif %}">{{ vaga.status_display }}</span>
+                                </div>
+                                <div class="text-muted small mt-1">{{ vaga.nome_empresa }} &middot; {{ vaga.tipo_contrato_display }} &middot; {{ vaga.modalidade_display }}</div>
                             </div>
-                            <div class="text-muted small">{{ vaga.nome_empresa }} &middot; {{ vaga.tipo_contrato_display }} &middot; {{ vaga.modalidade_display }}</div>
                         </div>
                         <div class="d-flex flex-wrap align-items-center gap-2">
-                            <span class="chip chip-muted">{{ vaga.qtd_candidaturas }} candidatura{{ vaga.qtd_candidaturas|pluralize }}</span>
+                            <span class="chip chip-info"><i class="bi bi-inbox"></i>{{ vaga.qtd_candidaturas }} candidatura{{ vaga.qtd_candidaturas|pluralize }}</span>
                             <a href="{% url 'jobs:detail' vaga.pk %}" class="btn btn-ghost btn-sm px-3">Ver</a>
                             <a href="{% url 'jobs:edit' vaga.pk %}" class="btn btn-ghost btn-sm px-3" title="Editar vaga"><i class="bi bi-pencil"></i></a>
                             <form method="POST" action="{% url 'jobs:toggle_status' vaga.pk %}">
@@ -103,24 +132,30 @@
                 {% endfor %}
             </div>
 
-            <h2 class="section-title mb-3">Candidaturas recebidas</h2>
+            <h2 class="section-title mb-3"><i class="bi bi-person-check text-accent me-2"></i>Candidaturas recebidas</h2>
             <div class="d-flex flex-column gap-3">
                 {% for candidatura in candidaturas_recebidas %}
-                <div class="card-flat p-3 p-md-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
-                    <div>
-                        <div class="fw-semibold">{{ candidatura.candidato.nome_completo|default:"Candidato" }}</div>
-                        <div class="text-muted small">{{ candidatura.vaga.funcao|default:"Vaga" }}</div>
+                <div class="list-row p-3 p-md-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="icon-square"><i class="bi bi-person"></i></span>
+                        <div>
+                            <div class="fw-semibold">{{ candidatura.candidato.nome_completo|default:"Candidato" }}</div>
+                            <div class="text-muted small">{{ candidatura.vaga.funcao|default:"Vaga" }}</div>
+                        </div>
                     </div>
                     <form method="POST" action="{% url 'jobs:candidatura_status' candidatura.pk %}" class="d-flex align-items-center gap-2">
                         {% csrf_token %}
                         <label class="text-muted small mb-0">Status</label>
-                        <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                        <select name="status" class="form-select form-select-sm" style="width:auto;" onchange="this.form.submit()">
                             <option value="enviada" {% if candidatura.status_candidatura == 'enviada' %}selected{% endif %}>Enviada</option>
                             <option value="em_analise" {% if candidatura.status_candidatura == 'em_analise' %}selected{% endif %}>Em análise</option>
                             <option value="entrevista" {% if candidatura.status_candidatura == 'entrevista' %}selected{% endif %}>Entrevista</option>
                             <option value="aprovado" {% if candidatura.status_candidatura == 'aprovado' %}selected{% endif %}>Aprovado</option>
                             <option value="recusado" {% if candidatura.status_candidatura == 'recusado' %}selected{% endif %}>Recusado</option>
                         </select>
+                        {% if candidatura.candidato_uid %}
+                        <a href="{% url 'jobs:conversa' candidatura.vaga_id candidatura.candidato_uid %}" class="btn btn-ghost btn-sm px-3" title="Conversar com o candidato"><i class="bi bi-chat-dots"></i></a>
+                        {% endif %}
                     </form>
                 </div>
                 {% empty %}
@@ -132,20 +167,23 @@
             </div>
 
         {% elif usuario.tipo_usuario == 'proprietario' %}
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h2 class="section-title">Meus imóveis</h2>
-                <span class="chip chip-muted">{{ imoveis_disponiveis }} com disponibilidade</span>
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                <h2 class="section-title"><i class="bi bi-house-door text-accent me-2"></i>Meus imóveis</h2>
+                <span class="chip chip-ok"><i class="bi bi-calendar-check"></i>{{ imoveis_disponiveis }} com disponibilidade</span>
             </div>
             <div class="d-flex flex-column gap-3">
                 {% for imovel in imoveis %}
-                <div class="card-flat p-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
-                    <div>
-                        <div class="fw-semibold">{{ imovel.endereco }}</div>
-                        <div class="text-muted small">{% if imovel.bairro %}{{ imovel.bairro }}, {% endif %}{{ imovel.cidade }}</div>
+                <div class="list-row p-3 p-md-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="icon-square"><i class="bi bi-house"></i></span>
+                        <div>
+                            <div class="fw-semibold">{{ imovel.endereco }}</div>
+                            <div class="text-muted small">{% if imovel.bairro %}{{ imovel.bairro }}, {% endif %}{{ imovel.cidade }}</div>
+                        </div>
                     </div>
                     <div class="d-flex flex-wrap align-items-center gap-2">
-                        <span class="fw-semibold">R$ {{ imovel.valor_aluguel_display }}<span class="text-muted fw-normal small">/mês</span></span>
-                        {% if imovel.contato_proprietario %}<span class="chip chip-muted">{{ imovel.contato_proprietario }}</span>{% endif %}
+                        <span class="chip chip-accent">R$ {{ imovel.valor_aluguel_display }}<span class="fw-normal">/mês</span></span>
+                        {% if imovel.contato_proprietario %}<span class="chip chip-muted"><i class="bi bi-telephone"></i>{{ imovel.contato_proprietario }}</span>{% endif %}
                         <a href="{% url 'properties:detail' imovel.pk %}" class="btn btn-ghost btn-sm px-3">Ver</a>
                         <a href="{% url 'properties:edit' imovel.pk %}" class="btn btn-ghost btn-sm px-3" title="Editar imóvel"><i class="bi bi-pencil"></i></a>
                         <form method="POST" action="{% url 'properties:delete' imovel.pk %}" onsubmit="return confirm('Excluir este imóvel?');">
@@ -165,48 +203,68 @@
             </div>
 
         {% else %}
-            <div class="row g-3 mb-4">
+            <div class="row g-3 mb-5">
                 <div class="col-6 col-lg-3">
-                    <div class="card-flat p-3 h-100">
-                        <div class="text-muted small">Enviadas</div>
-                        <div class="fs-4 fw-bold">{{ cand_enviadas|default:0 }}</div>
+                    <div class="stat-card">
+                        <span class="icon-square"><i class="bi bi-send"></i></span>
+                        <div>
+                            <div class="stat-label">Enviadas</div>
+                            <div class="stat-value">{{ cand_enviadas|default:0 }}</div>
+                        </div>
                     </div>
                 </div>
                 <div class="col-6 col-lg-3">
-                    <div class="card-flat p-3 h-100">
-                        <div class="text-muted small">Em análise</div>
-                        <div class="fs-4 fw-bold">{{ cand_analise|default:0 }}</div>
+                    <div class="stat-card">
+                        <span class="icon-square"><i class="bi bi-hourglass-split"></i></span>
+                        <div>
+                            <div class="stat-label">Em análise</div>
+                            <div class="stat-value">{{ cand_analise|default:0 }}</div>
+                        </div>
                     </div>
                 </div>
                 <div class="col-6 col-lg-3">
-                    <div class="card-flat p-3 h-100">
-                        <div class="text-muted small">Entrevistas</div>
-                        <div class="fs-4 fw-bold">{{ cand_entrevista|default:0 }}</div>
+                    <div class="stat-card">
+                        <span class="icon-square"><i class="bi bi-chat-dots"></i></span>
+                        <div>
+                            <div class="stat-label">Entrevistas</div>
+                            <div class="stat-value">{{ cand_entrevista|default:0 }}</div>
+                        </div>
                     </div>
                 </div>
                 <div class="col-6 col-lg-3">
-                    <div class="card-flat p-3 h-100">
-                        <div class="text-muted small">Aprovadas</div>
-                        <div class="fs-4 fw-bold">{{ cand_aprovadas|default:0 }}</div>
+                    <div class="stat-card">
+                        <span class="icon-square"><i class="bi bi-patch-check"></i></span>
+                        <div>
+                            <div class="stat-label">Aprovadas</div>
+                            <div class="stat-value">{{ cand_aprovadas|default:0 }}</div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <h2 class="section-title mb-3">Minhas candidaturas</h2>
+            <h2 class="section-title mb-3"><i class="bi bi-send text-accent me-2"></i>Minhas candidaturas</h2>
             <div class="d-flex flex-column gap-3 mb-5">
                 {% for candidatura in candidaturas %}
-                <div class="card-flat p-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
-                    <div>
-                        <div class="fw-semibold">{{ candidatura.vaga.funcao|default:"Vaga" }}</div>
-                        <div class="text-muted small">{{ candidatura.vaga.nome_empresa|default:"" }}</div>
+                <div class="list-row p-3 p-md-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="icon-square"><i class="bi bi-briefcase"></i></span>
+                        <div>
+                            <div class="fw-semibold">{{ candidatura.vaga.funcao|default:"Vaga" }}</div>
+                            <div class="text-muted small">{{ candidatura.vaga.nome_empresa|default:"" }}</div>
+                        </div>
                     </div>
-                    <span class="chip chip-muted">
-                        {% if candidatura.status_candidatura == 'em_analise' %}Em análise
-                        {% elif candidatura.status_candidatura == 'entrevista' %}Entrevista
-                        {% elif candidatura.status_candidatura == 'aprovado' %}Aprovado
-                        {% elif candidatura.status_candidatura == 'recusado' %}Recusado
-                        {% else %}Enviada{% endif %}
-                    </span>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="chip {% if candidatura.status_candidatura == 'aprovado' %}chip-ok{% elif candidatura.status_candidatura == 'recusado' %}chip-danger{% elif candidatura.status_candidatura == 'entrevista' %}chip-warn{% elif candidatura.status_candidatura == 'em_analise' %}chip-info{% else %}chip-muted{% endif %}">
+                            {% if candidatura.status_candidatura == 'em_analise' %}Em análise
+                            {% elif candidatura.status_candidatura == 'entrevista' %}Entrevista
+                            {% elif candidatura.status_candidatura == 'aprovado' %}Aprovado
+                            {% elif candidatura.status_candidatura == 'recusado' %}Recusado
+                            {% else %}Enviada{% endif %}
+                        </span>
+                        {% if candidatura.candidato_uid %}
+                        <a href="{% url 'jobs:conversa' candidatura.vaga_id candidatura.candidato_uid %}" class="btn btn-ghost btn-sm px-3" title="Ver mensagens"><i class="bi bi-chat-dots"></i></a>
+                        {% endif %}
+                    </div>
                 </div>
                 {% empty %}
                 <div class="empty-state">
@@ -219,22 +277,63 @@
             </div>
 
             {% if vagas_recomendadas %}
-            <h2 class="section-title mb-3">Vagas recomendadas</h2>
+            <h2 class="section-title mb-3"><i class="bi bi-stars text-accent me-2"></i>Vagas recomendadas</h2>
             <div class="row g-4">
                 {% for vaga in vagas_recomendadas %}
                 <div class="col-md-6">
                     <a href="{% url 'jobs:detail' vaga.pk %}" class="card-min d-flex flex-column h-100 p-4">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <h3 class="h6 fw-semibold mb-0 me-2">{{ vaga.funcao }}</h3>
-                            <span class="chip chip-muted">{{ vaga.tipo_contrato_display }}</span>
+                        <div class="d-flex align-items-start gap-3 mb-3">
+                            <span class="icon-square"><i class="bi bi-briefcase"></i></span>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-start gap-2">
+                                    <h3 class="h6 fw-semibold mb-0">{{ vaga.funcao }}</h3>
+                                    <span class="chip chip-muted">{{ vaga.tipo_contrato_display }}</span>
+                                </div>
+                                <p class="text-muted small mb-0 mt-1"><i class="bi bi-building me-1"></i>{{ vaga.nome_empresa }}</p>
+                            </div>
                         </div>
-                        <p class="text-muted small mb-1"><i class="bi bi-building me-1"></i>{{ vaga.nome_empresa }}</p>
-                        <p class="text-muted small mb-0"><i class="bi bi-geo-alt me-1"></i>{{ vaga.endereco|default:"Paulistana - PI" }}</p>
+                        <p class="text-muted small mb-0 mt-auto pt-2 divider"><i class="bi bi-geo-alt me-1"></i>{{ vaga.endereco|default:"Paulistana - PI" }}</p>
                     </a>
                 </div>
                 {% endfor %}
             </div>
             {% endif %}
+        {% endif %}
+
+        {% if usuario.tipo_usuario != 'proprietario' %}
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3 mt-5">
+                <h2 class="section-title"><i class="bi bi-house-door text-accent me-2"></i>Meus imóveis</h2>
+                <a href="{% url 'properties:create' %}" class="btn btn-ghost btn-sm"><i class="bi bi-plus-lg me-1"></i>Anunciar imóvel</a>
+            </div>
+            <div class="d-flex flex-column gap-3">
+                {% for imovel in imoveis %}
+                <div class="list-row p-3 p-md-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="icon-square"><i class="bi bi-house"></i></span>
+                        <div>
+                            <div class="fw-semibold">{{ imovel.endereco }}</div>
+                            <div class="text-muted small">{% if imovel.bairro %}{{ imovel.bairro }}, {% endif %}{{ imovel.cidade }}</div>
+                        </div>
+                    </div>
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <span class="chip chip-accent">R$ {{ imovel.valor_aluguel_display }}<span class="fw-normal">/mês</span></span>
+                        <a href="{% url 'properties:detail' imovel.pk %}" class="btn btn-ghost btn-sm px-3">Ver</a>
+                        <a href="{% url 'properties:edit' imovel.pk %}" class="btn btn-ghost btn-sm px-3" title="Editar imóvel"><i class="bi bi-pencil"></i></a>
+                        <form method="POST" action="{% url 'properties:delete' imovel.pk %}" onsubmit="return confirm('Excluir este imóvel?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-ghost btn-sm px-3 text-danger" title="Excluir imóvel"><i class="bi bi-trash"></i></button>
+                        </form>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="empty-state">
+                    <i class="bi bi-house d-block mb-2"></i>
+                    <p class="mb-1 fw-medium">Você ainda não anunciou imóveis</p>
+                    <p class="text-muted small mb-3">Além de usar a plataforma, você também pode anunciar um imóvel para alugar.</p>
+                    <a href="{% url 'properties:create' %}" class="btn btn-accent"><i class="bi bi-plus-lg me-1"></i>Anunciar imóvel</a>
+                </div>
+                {% endfor %}
+            </div>
         {% endif %}
     </div>
 </section>

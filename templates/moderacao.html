@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% block title %}Moderação - Oportunet{% endblock %}
+
+{% block content %}
+<section class="page-band">
+    <div class="container">
+        <span class="eyebrow">Administração</span>
+        <h1 class="page-title mt-2 mb-1">Moderação e segurança</h1>
+        <p class="text-muted mb-0">Analise denúncias de anúncios e pedidos de verificação de empresa.</p>
+    </div>
+</section>
+
+<section class="section pt-4">
+    <div class="container">
+        <div class="row g-3 g-md-4 mb-4">
+            <div class="col-6 col-lg-3">
+                <div class="stat-card">
+                    <span class="icon-square"><i class="bi bi-people"></i></span>
+                    <div>
+                        <div class="stat-label">Usuários</div>
+                        <div class="stat-value">{{ metricas.usuarios }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="stat-card">
+                    <span class="icon-square"><i class="bi bi-briefcase"></i></span>
+                    <div>
+                        <div class="stat-label">Vagas publicadas</div>
+                        <div class="stat-value">{{ metricas.vagas }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="stat-card">
+                    <span class="icon-square"><i class="bi bi-house-door"></i></span>
+                    <div>
+                        <div class="stat-label">Imóveis anunciados</div>
+                        <div class="stat-value">{{ metricas.imoveis }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="stat-card">
+                    <span class="icon-square"><i class="bi bi-send"></i></span>
+                    <div>
+                        <div class="stat-label">Candidaturas</div>
+                        <div class="stat-value">{{ metricas.candidaturas }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="card-flat p-4 h-100">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <span class="icon-square"><i class="bi bi-flag"></i></span>
+                        <h2 class="h6 fw-semibold mb-0">Denúncias abertas</h2>
+                        <span class="chip chip-muted ms-auto">{{ denuncias|length }}</span>
+                    </div>
+
+                    {% for d in denuncias %}
+                        <div class="card-quiet p-3 mb-3">
+                            <div class="d-flex justify-content-between align-items-start gap-2">
+                                <div>
+                                    <span class="chip chip-warn mb-2 d-inline-flex">{{ d.tipo_display }}</span>
+                                    <div class="fw-medium">{{ d.motivo_display }}</div>
+                                    <small class="text-muted d-block">{{ d.criado_display }} · {{ d.denunciante_email }}</small>
+                                </div>
+                                <a href="{{ d.url_alvo }}" class="btn btn-ghost btn-sm" target="_blank">Ver anúncio</a>
+                            </div>
+                            {% if d.detalhes %}<p class="text-muted small mt-2 mb-2">{{ d.detalhes }}</p>{% endif %}
+                            <div class="d-flex gap-2 mt-2">
+                                <form method="POST" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="pk" value="{{ d.pk }}">
+                                    <button name="acao" value="resolver" class="btn btn-soft btn-sm"><i class="bi bi-check2 me-1"></i>Resolver</button>
+                                </form>
+                                <form method="POST" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="pk" value="{{ d.pk }}">
+                                    <button name="acao" value="descartar" class="btn btn-ghost btn-sm">Descartar</button>
+                                </form>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="empty-state">
+                            <i class="bi bi-shield-check"></i>
+                            <p class="text-muted mt-2 mb-0">Nenhuma denúncia aberta.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card-flat p-4 h-100">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <span class="icon-square"><i class="bi bi-patch-check"></i></span>
+                        <h2 class="h6 fw-semibold mb-0">Solicitações de verificação</h2>
+                        <span class="chip chip-muted ms-auto">{{ solicitacoes|length }}</span>
+                    </div>
+
+                    {% for s in solicitacoes %}
+                        <div class="card-quiet p-3 mb-3">
+                            <div class="fw-medium">{{ s.nome }}</div>
+                            <small class="text-muted d-block">{{ s.email }}{% if s.cnpj %} · {{ s.cnpj }}{% endif %}</small>
+                            <small class="text-muted d-block">{{ s.criado_display }}</small>
+                            {% if s.mensagem %}<p class="small mb-2">{{ s.mensagem }}</p>{% endif %}
+                            {% if s.documento_url %}
+                                <a href="{{ s.documento_url }}" target="_blank" rel="noopener" class="btn btn-ghost btn-sm mb-2">
+                                    <i class="bi bi-paperclip me-1"></i>Ver documento
+                                </a>
+                            {% endif %}
+                            <div class="d-flex gap-2 mt-2">
+                                <form method="POST" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="pk" value="{{ s.pk }}">
+                                    <button name="acao" value="aprovar" class="btn btn-soft btn-sm"><i class="bi bi-check2 me-1"></i>Aprovar</button>
+                                </form>
+                                <form method="POST" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="pk" value="{{ s.pk }}">
+                                    <button name="acao" value="recusar" class="btn btn-ghost btn-sm">Recusar</button>
+                                </form>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="empty-state">
+                            <i class="bi bi-patch-check"></i>
+                            <p class="text-muted mt-2 mb-0">Nenhuma solicitação pendente.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

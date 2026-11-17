@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block title %}{{ empresa.nome_completo|default:empresa.email }} - Oportunet{% endblock %}
+
+{% block content %}
+<section class="page-band">
+    <div class="container">
+        <div class="d-flex flex-wrap align-items-center gap-3">
+            {% if empresa.foto_perfil %}
+                <img src="{{ empresa.foto_perfil.url }}" alt="Foto de {{ empresa.nome_completo }}"
+                     style="width:72px;height:72px;border-radius:50%;object-fit:cover;border:1px solid var(--border);">
+            {% else %}
+                <span class="icon-square icon-square-lg"><i class="bi bi-building"></i></span>
+            {% endif %}
+            <div class="flex-grow-1">
+                <span class="eyebrow">Empresa</span>
+                <h1 class="page-title mt-1 mb-1">{{ empresa.nome_completo|default:empresa.email }}</h1>
+                <div class="d-flex flex-wrap gap-2">
+                    {% if empresa.verificado %}<span class="chip chip-info"><i class="bi bi-patch-check-fill"></i>Empresa verificada</span>{% endif %}
+                    {% if empresa.cidade %}<span class="chip chip-muted"><i class="bi bi-geo-alt"></i>{{ empresa.cidade }}</span>{% endif %}
+                    <span class="chip chip-accent"><i class="bi bi-briefcase"></i>{{ total_abertas }} vaga{{ total_abertas|pluralize }} aberta{{ total_abertas|pluralize }}</span>
+                </div>
+            </div>
+            {% if sou_dono %}
+                <a href="{% url 'users:perfil' %}" class="btn btn-ghost"><i class="bi bi-pencil me-1"></i>Editar perfil</a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<section class="section pt-4">
+    <div class="container">
+        <div class="row g-4 mb-5">
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <span class="icon-square"><i class="bi bi-broadcast"></i></span>
+                    <div>
+                        <div class="stat-label">Vagas abertas</div>
+                        <div class="stat-value">{{ total_abertas }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <span class="icon-square"><i class="bi bi-collection"></i></span>
+                    <div>
+                        <div class="stat-label">Total de vagas</div>
+                        <div class="stat-value">{{ total_vagas }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <span class="icon-square"><i class="bi bi-clock-history"></i></span>
+                    <div>
+                        <div class="stat-label">Encerradas</div>
+                        <div class="stat-value">{{ total_encerradas }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="section-title mb-4"><i class="bi bi-megaphone text-accent me-2"></i>Vagas abertas</h2>
+
+        <div class="row g-4">
+            {% for vaga in vagas %}
+            <div class="col-md-6 col-xl-4">
+                <a href="{% url 'jobs:detail' vaga.pk %}" class="card-min fade-up d-flex flex-column h-100 p-4" style="transition-delay: {% widthratio forloop.counter0 1 70 %}ms;">
+                    <div class="d-flex align-items-start gap-3 mb-3">
+                        <span class="icon-square"><i class="bi bi-briefcase"></i></span>
+                        <div class="flex-grow-1">
+                            <h3 class="h6 fw-semibold mb-1">{{ vaga.funcao }}</h3>
+                            <p class="text-muted small mb-0"><i class="bi bi-geo-alt me-1"></i>{{ vaga.endereco|default:"Paulistana - PI" }}</p>
+                        </div>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2 flex-grow-1">
+                        <span class="chip chip-muted">{{ vaga.tipo_contrato_display }}</span>
+                        <span class="chip chip-muted">{{ vaga.modalidade_display }}</span>
+                    </div>
+                    <div class="divider pt-3 mt-3 d-flex justify-content-between align-items-center">
+                        <span class="fw-semibold">{% if vaga.salario_display %}R$ {{ vaga.salario_display }}{% else %}A combinar{% endif %}</span>
+                        <i class="bi bi-arrow-right text-accent"></i>
+                    </div>
+                </a>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="empty-state">
+                    <i class="bi bi-megaphone d-block mb-2"></i>
+                    <p class="text-muted mb-0">Esta empresa não tem vagas abertas no momento.</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

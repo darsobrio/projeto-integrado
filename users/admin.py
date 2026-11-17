@@ -12,8 +12,9 @@ class PerfilCandidatoInline(admin.StackedInline):
 class CustomUserAdmin(UserAdmin):
     model = CustomUser
     inlines = (PerfilCandidatoInline,)
-    list_display = ('email', 'nome_completo', 'tipo_usuario', 'cidade', 'is_staff')
-    list_filter = ('tipo_usuario', 'is_staff', 'is_superuser')
+    list_display = ('email', 'nome_completo', 'tipo_usuario', 'cidade', 'verificado', 'is_staff')
+    list_filter = ('tipo_usuario', 'verificado', 'is_staff', 'is_superuser')
+    list_editable = ('verificado',)
     fieldsets = UserAdmin.fieldsets + (
         (
             'Informações Adicionais',
@@ -27,6 +28,7 @@ class CustomUserAdmin(UserAdmin):
                     'endereco',
                     'cidade',
                     'tipo_usuario',
+                    'verificado',
                 )
             },
         ),

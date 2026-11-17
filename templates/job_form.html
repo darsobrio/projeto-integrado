@@ -2,20 +2,21 @@
 {% block title %}{% if modo_edicao %}Editar vaga{% else %}Publicar vaga{% endif %} - Oportunet{% endblock %}
 
 {% block content %}
-<section class="section">
+<section class="page-band">
     <div class="container" style="max-width: 880px;">
-        <a href="{% url 'core:dashboard' %}" class="small text-muted d-inline-block mb-4"><i class="bi bi-arrow-left me-1"></i>Voltar ao painel</a>
+        <a href="{% url 'core:dashboard' %}" class="small text-muted d-inline-block mb-3"><i class="bi bi-arrow-left me-1"></i>Voltar ao painel</a>
+        <span class="eyebrow">Empresa</span>
+        <h1 class="page-title mt-2 mb-1">{% if modo_edicao %}Editar vaga{% else %}Publicar nova vaga{% endif %}</h1>
+        <p class="text-muted mb-0">Preencha as informações abaixo. Os campos com * são obrigatórios.</p>
+    </div>
+</section>
 
-        <div class="mb-4">
-            <span class="eyebrow">Empresa</span>
-            <h1 class="page-title mt-2 mb-1">{% if modo_edicao %}Editar vaga{% else %}Publicar nova vaga{% endif %}</h1>
-            <p class="text-muted mb-0">Preencha as informações abaixo. Os campos com * são obrigatórios.</p>
-        </div>
-
+<section class="section pt-4">
+    <div class="container" style="max-width: 880px;">
         <form method="POST" class="card-flat p-4 p-md-5">
             {% csrf_token %}
 
-            <h2 class="h6 fw-semibold mb-3">Informações da vaga</h2>
+            <h2 class="h6 fw-semibold mb-3"><i class="bi bi-briefcase text-accent me-2"></i>Informações da vaga</h2>
             <div class="row g-3 mb-4">
                 <div class="col-md-8">
                     <label class="form-label">Função / cargo *</label>
@@ -52,7 +53,7 @@
                 </div>
             </div>
 
-            <h2 class="h6 fw-semibold mb-3">Descrição</h2>
+            <h2 class="h6 fw-semibold mb-3"><i class="bi bi-card-text text-accent me-2"></i>Descrição</h2>
             <div class="row g-3 mb-4">
                 <div class="col-12">
                     <label class="form-label">Descrição da vaga *</label>
@@ -72,7 +73,7 @@
                 </div>
             </div>
 
-            <h2 class="h6 fw-semibold mb-3">Empresa e local</h2>
+            <h2 class="h6 fw-semibold mb-3"><i class="bi bi-geo-alt text-accent me-2"></i>Empresa e local</h2>
             <div class="row g-3 mb-4">
                 <div class="col-md-8">
                     <label class="form-label">Nome da empresa</label>

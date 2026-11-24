@@ -54,6 +54,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# Permite que o popup OAuth do Firebase retorne o resultado à janela de login.
+SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin-allow-popups'
+
 ROOT_URLCONF = 'ifpi_oportunidades.urls'
 
 TEMPLATES = [

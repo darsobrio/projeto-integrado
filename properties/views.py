@@ -395,8 +395,8 @@ def property_detail(request, pk):
 def property_create(request):
     """Publica um novo imóvel no Firestore.
 
-    Qualquer conta autenticada pode anunciar (candidato, empresa ou
-    proprietário), já que uma mesma pessoa pode buscar vagas e alugar imóveis.
+    Qualquer conta autenticada pode anunciar imóveis, já que uma mesma pessoa
+    pode buscar vagas e alugar imóveis.
     """
     anunciados = db.collection("imoveis").where(
         "proprietario_id", "==", str(request.user.pk)

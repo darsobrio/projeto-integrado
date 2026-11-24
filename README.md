@@ -150,9 +150,9 @@ A suíte cobre validação de CPF/CNPJ, formatação de valores, paginação, co
 
 ## 🎯 Funcionalidades
 
-- **Cadastro/login** com Firebase Auth, três tipos de conta (candidato, empresa, proprietário)
+- **Cadastro/login** com Firebase Auth, dois tipos de conta (candidato e empresa)
 - **Vagas**: publicar (empresa), filtrar, favoritar, alertas por filtro salvo, candidatar-se, compartilhar
-- **Imóveis**: publicar (proprietário), galeria de fotos, mapa (Leaflet), filtro por proximidade
+- **Imóveis**: qualquer usuário autenticado pode publicar; galeria de fotos, mapa (Leaflet), filtro por proximidade
 - **Perfil do candidato**: escolaridade, experiências, habilidades, currículo em PDF e barra de completude
 - **Candidaturas**: acompanhamento de status pela empresa, com notificação por e-mail
 - **Mensagens** entre empresa e candidato dentro da plataforma

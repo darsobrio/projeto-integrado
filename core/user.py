@@ -27,7 +27,6 @@ ESCOLARIDADE_CHOICES = [
 TIPO_USUARIO_CHOICES = [
     ("candidato", "Candidato"),
     ("empresa", "Empresa"),
-    ("proprietario", "Proprietário"),
 ]
 
 CAMPOS_USUARIO = (
@@ -175,6 +174,12 @@ class Usuario:
                 valor = _para_data(valor)
             elif campo == "foto_perfil":
                 valor = arquivo_do_campo(valor or dados.get("foto_url"))
+            elif campo == "tipo_usuario" and valor not in {
+                "candidato",
+                "empresa",
+            }:
+                # Contas antigas com o tipo removido continuam funcionando.
+                valor = "candidato"
             setattr(self, campo, valor)
 
     @property
@@ -429,7 +434,9 @@ def criar_usuario(
     usuario.email = email
     usuario.username = username or email
     usuario.nome_completo = nome_completo
-    usuario.tipo_usuario = tipo_usuario
+    usuario.tipo_usuario = (
+        tipo_usuario if tipo_usuario in {"candidato", "empresa"} else "candidato"
+    )
     usuario.cidade = cidade
     usuario.telefone = telefone
     usuario.cpf = cpf

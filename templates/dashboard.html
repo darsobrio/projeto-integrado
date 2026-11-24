@@ -6,7 +6,6 @@
     <div class="container">
         <span class="eyebrow">
             {% if usuario.tipo_usuario == 'empresa' %}Painel da empresa
-            {% elif usuario.tipo_usuario == 'proprietario' %}Painel do proprietário
             {% else %}Painel do candidato{% endif %}
         </span>
         <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mt-2">
@@ -20,8 +19,6 @@
                     <a href="{% url 'jobs:mensagens' %}" class="btn btn-ghost btn-mob-full"><i class="bi bi-chat-dots me-1"></i>Mensagens</a>
                     <a href="{% url 'properties:create' %}" class="btn btn-ghost btn-mob-full"><i class="bi bi-house-add me-1"></i>Anunciar imóvel</a>
                     <a href="{% url 'jobs:create' %}" class="btn btn-accent btn-mob-full"><i class="bi bi-plus-lg me-1"></i>Publicar vaga</a>
-                {% elif usuario.tipo_usuario == 'proprietario' %}
-                    <a href="{% url 'properties:create' %}" class="btn btn-accent btn-mob-full"><i class="bi bi-plus-lg me-1"></i>Anunciar imóvel</a>
                 {% else %}
                     <a href="{% url 'jobs:minhas_candidaturas' %}" class="btn btn-ghost btn-mob-full"><i class="bi bi-send me-1"></i>Minhas candidaturas</a>
                     <a href="{% url 'jobs:mensagens' %}" class="btn btn-ghost btn-mob-full"><i class="bi bi-chat-dots me-1"></i>Mensagens</a>
@@ -73,12 +70,10 @@
                     <div>
                         <div class="stat-label">
                             {% if usuario.tipo_usuario == 'empresa' %}Minhas vagas
-                            {% elif usuario.tipo_usuario == 'proprietario' %}Meus imóveis
                             {% else %}Minhas candidaturas{% endif %}
                         </div>
                         <div class="stat-value">
                             {% if usuario.tipo_usuario == 'empresa' %}{{ vagas|length }}
-                            {% elif usuario.tipo_usuario == 'proprietario' %}{{ imoveis|length }}
                             {% else %}{{ candidaturas|length }}{% endif %}
                         </div>
                     </div>
@@ -162,42 +157,6 @@
                 <div class="empty-state">
                     <i class="bi bi-inbox d-block mb-2"></i>
                     <p class="text-muted small mb-0">Nenhuma candidatura recebida até o momento.</p>
-                </div>
-                {% endfor %}
-            </div>
-
-        {% elif usuario.tipo_usuario == 'proprietario' %}
-            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-                <h2 class="section-title"><i class="bi bi-house-door text-accent me-2"></i>Meus imóveis</h2>
-                <span class="chip chip-ok"><i class="bi bi-calendar-check"></i>{{ imoveis_disponiveis }} com disponibilidade</span>
-            </div>
-            <div class="d-flex flex-column gap-3">
-                {% for imovel in imoveis %}
-                <div class="list-row p-3 p-md-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
-                    <div class="d-flex align-items-center gap-3">
-                        <span class="icon-square"><i class="bi bi-house"></i></span>
-                        <div>
-                            <div class="fw-semibold">{{ imovel.endereco }}</div>
-                            <div class="text-muted small">{% if imovel.bairro %}{{ imovel.bairro }}, {% endif %}{{ imovel.cidade }}</div>
-                        </div>
-                    </div>
-                    <div class="d-flex flex-wrap align-items-center gap-2">
-                        <span class="chip chip-accent">R$ {{ imovel.valor_aluguel_display }}<span class="fw-normal">/mês</span></span>
-                        {% if imovel.contato_proprietario %}<span class="chip chip-muted"><i class="bi bi-telephone"></i>{{ imovel.contato_proprietario }}</span>{% endif %}
-                        <a href="{% url 'properties:detail' imovel.pk %}" class="btn btn-ghost btn-sm px-3">Ver</a>
-                        <a href="{% url 'properties:edit' imovel.pk %}" class="btn btn-ghost btn-sm px-3" title="Editar imóvel"><i class="bi bi-pencil"></i></a>
-                        <form method="POST" action="{% url 'properties:delete' imovel.pk %}" onsubmit="return confirm('Excluir este imóvel?');">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-ghost btn-sm px-3 text-danger" title="Excluir imóvel"><i class="bi bi-trash"></i></button>
-                        </form>
-                    </div>
-                </div>
-                {% empty %}
-                <div class="empty-state">
-                    <i class="bi bi-house d-block mb-2"></i>
-                    <p class="mb-1 fw-medium">Você ainda não anunciou imóveis</p>
-                    <p class="text-muted small mb-3">Anuncie seu imóvel e encontre inquilinos para a sua região.</p>
-                    <a href="{% url 'properties:create' %}" class="btn btn-accent"><i class="bi bi-plus-lg me-1"></i>Anunciar imóvel</a>
                 </div>
                 {% endfor %}
             </div>
@@ -300,41 +259,40 @@
             {% endif %}
         {% endif %}
 
-        {% if usuario.tipo_usuario != 'proprietario' %}
-            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3 mt-5">
-                <h2 class="section-title"><i class="bi bi-house-door text-accent me-2"></i>Meus imóveis</h2>
-                <a href="{% url 'properties:create' %}" class="btn btn-ghost btn-sm"><i class="bi bi-plus-lg me-1"></i>Anunciar imóvel</a>
-            </div>
-            <div class="d-flex flex-column gap-3">
-                {% for imovel in imoveis %}
-                <div class="list-row p-3 p-md-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
-                    <div class="d-flex align-items-center gap-3">
-                        <span class="icon-square"><i class="bi bi-house"></i></span>
-                        <div>
-                            <div class="fw-semibold">{{ imovel.endereco }}</div>
-                            <div class="text-muted small">{% if imovel.bairro %}{{ imovel.bairro }}, {% endif %}{{ imovel.cidade }}</div>
-                        </div>
-                    </div>
-                    <div class="d-flex flex-wrap align-items-center gap-2">
-                        <span class="chip chip-accent">R$ {{ imovel.valor_aluguel_display }}<span class="fw-normal">/mês</span></span>
-                        <a href="{% url 'properties:detail' imovel.pk %}" class="btn btn-ghost btn-sm px-3">Ver</a>
-                        <a href="{% url 'properties:edit' imovel.pk %}" class="btn btn-ghost btn-sm px-3" title="Editar imóvel"><i class="bi bi-pencil"></i></a>
-                        <form method="POST" action="{% url 'properties:delete' imovel.pk %}" onsubmit="return confirm('Excluir este imóvel?');">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-ghost btn-sm px-3 text-danger" title="Excluir imóvel"><i class="bi bi-trash"></i></button>
-                        </form>
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3 mt-5">
+            <h2 class="section-title"><i class="bi bi-house-door text-accent me-2"></i>Meus imóveis</h2>
+            <a href="{% url 'properties:create' %}" class="btn btn-ghost btn-sm"><i class="bi bi-plus-lg me-1"></i>Anunciar imóvel</a>
+        </div>
+        <div class="d-flex flex-column gap-3">
+            {% for imovel in imoveis %}
+            <div class="list-row p-3 p-md-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <span class="icon-square"><i class="bi bi-house"></i></span>
+                    <div>
+                        <div class="fw-semibold">{{ imovel.endereco }}</div>
+                        <div class="text-muted small">{% if imovel.bairro %}{{ imovel.bairro }}, {% endif %}{{ imovel.cidade }}</div>
                     </div>
                 </div>
-                {% empty %}
-                <div class="empty-state">
-                    <i class="bi bi-house d-block mb-2"></i>
-                    <p class="mb-1 fw-medium">Você ainda não anunciou imóveis</p>
-                    <p class="text-muted small mb-3">Além de usar a plataforma, você também pode anunciar um imóvel para alugar.</p>
-                    <a href="{% url 'properties:create' %}" class="btn btn-accent"><i class="bi bi-plus-lg me-1"></i>Anunciar imóvel</a>
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <span class="chip chip-accent">R$ {{ imovel.valor_aluguel_display }}<span class="fw-normal">/mês</span></span>
+                    {% if imovel.contato_proprietario %}<span class="chip chip-muted"><i class="bi bi-telephone"></i>{{ imovel.contato_proprietario }}</span>{% endif %}
+                    <a href="{% url 'properties:detail' imovel.pk %}" class="btn btn-ghost btn-sm px-3">Ver</a>
+                    <a href="{% url 'properties:edit' imovel.pk %}" class="btn btn-ghost btn-sm px-3" title="Editar imóvel"><i class="bi bi-pencil"></i></a>
+                    <form method="POST" action="{% url 'properties:delete' imovel.pk %}" onsubmit="return confirm('Excluir este imóvel?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-ghost btn-sm px-3 text-danger" title="Excluir imóvel"><i class="bi bi-trash"></i></button>
+                    </form>
                 </div>
-                {% endfor %}
             </div>
-        {% endif %}
+            {% empty %}
+            <div class="empty-state">
+                <i class="bi bi-house d-block mb-2"></i>
+                <p class="mb-1 fw-medium">Você ainda não anunciou imóveis</p>
+                <p class="text-muted small mb-3">Além de usar a plataforma, você também pode anunciar um imóvel para alugar.</p>
+                <a href="{% url 'properties:create' %}" class="btn btn-accent"><i class="bi bi-plus-lg me-1"></i>Anunciar imóvel</a>
+            </div>
+            {% endfor %}
+        </div>
     </div>
 </section>
 {% endblock %}

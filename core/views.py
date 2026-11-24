@@ -169,7 +169,7 @@ def register(request):
     senha = request.POST.get('password', '')
     tipo = request.POST.get('tipo_usuario', 'candidato')
 
-    if tipo not in {'candidato', 'empresa', 'proprietario'}:
+    if tipo not in {'candidato', 'empresa'}:
         tipo = 'candidato'
 
     if len(nome) < 3 or not email or not senha:
@@ -347,9 +347,7 @@ def login_google(request):
     id_token = request.POST.get('id_token', '').strip()
     tipo_usuario = request.POST.get('tipo_usuario', 'candidato').strip()
     tipo_usuario = (
-        tipo_usuario
-        if tipo_usuario in {'candidato', 'empresa', 'proprietario'}
-        else 'candidato'
+        tipo_usuario if tipo_usuario in {'candidato', 'empresa'} else 'candidato'
     )
 
     if not id_token:
@@ -544,26 +542,6 @@ def dashboard(request):
         )
         context["candidaturas_recebidas"] = candidaturas_empresa
 
-        meus_imoveis = [
-            imovel for imovel in imoveis
-            if str(getattr(imovel, "proprietario_id", ""))
-            == str(usuario.pk)
-        ]
-        context["imoveis"] = ordenar(meus_imoveis, "criado_em")
-
-    elif usuario.tipo_usuario == "proprietario":
-        meus_imoveis = [
-            imovel for imovel in imoveis
-            if str(getattr(imovel, "proprietario_id", ""))
-            == str(usuario.pk)
-        ]
-
-        context["imoveis"] = ordenar(meus_imoveis, "criado_em")
-        context["imoveis_disponiveis"] = sum(
-            1 for imovel in meus_imoveis
-            if getattr(imovel, "disponibilidade", None)
-        )
-
     else:
         minhas_candidaturas = [
             candidatura for candidatura in candidaturas
@@ -609,12 +587,12 @@ def dashboard(request):
             if str(vaga.pk) not in ids_candidatados
         ][:4]
 
-        meus_imoveis = [
-            imovel for imovel in imoveis
-            if str(getattr(imovel, "proprietario_id", ""))
-            == str(usuario.pk)
-        ]
-        context["imoveis"] = ordenar(meus_imoveis, "criado_em")
+    meus_imoveis = [
+        imovel for imovel in imoveis
+        if str(getattr(imovel, "proprietario_id", ""))
+        == str(usuario.pk)
+    ]
+    context["imoveis"] = ordenar(meus_imoveis, "criado_em")
 
     return render(request, "dashboard.html", context)
 

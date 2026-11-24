@@ -10,9 +10,25 @@ from google.cloud import firestore
 from core import db
 
 
+def _aceita_notificacoes(uid):
+    """Respeita a preferência ``notificar_site`` do usuário (padrão: ligada)."""
+    try:
+        documento = db.collection("usuarios").document(str(uid)).get()
+    except Exception:
+        return True
+
+    if not documento.exists:
+        return True
+
+    return (documento.to_dict() or {}).get("notificar_site", True) is not False
+
+
 def criar_notificacao(uid, titulo, mensagem, link=None):
     """Cria uma notificação in-app para o usuário dono do ``uid``."""
     if not uid:
+        return
+
+    if not _aceita_notificacoes(uid):
         return
 
     db.collection("notificacoes").document().set({

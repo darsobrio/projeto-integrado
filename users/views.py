@@ -199,6 +199,14 @@ def salvar_perfil_profissional(request, perfil_candidato):
     return True
 
 
+def salvar_configuracoes(request, usuario):
+    """Salva as preferências da aba Configurações."""
+    usuario.notificar_site = request.POST.get("notificar_site") == "on"
+    salvar_usuario(usuario)
+    messages.success(request, "Preferências atualizadas com sucesso.")
+    return True
+
+
 def salvar_nova_senha(request, usuario):
     senha_atual = request.POST.get("senha_atual", "")
     nova_senha = request.POST.get("nova_senha", "")
@@ -251,6 +259,8 @@ def perfil(request):
             salvar_dados_conta(request, usuario)
         elif secao == "profissional" and perfil_candidato is not None:
             salvar_perfil_profissional(request, perfil_candidato)
+        elif secao == "config":
+            salvar_configuracoes(request, usuario)
         elif secao == "seguranca":
             salvar_nova_senha(request, usuario)
 

@@ -42,6 +42,7 @@ CAMPOS_USUARIO = (
     "data_nascimento",
     "foto_perfil",
     "verificado",
+    "notificar_site",
     "is_active",
     "is_staff",
     "is_superuser",
@@ -156,6 +157,7 @@ class Usuario:
         self.data_nascimento = None
         self.foto_perfil = None
         self.verificado = False
+        self.notificar_site = True
         self.is_active = True
         self.is_staff = False
         self.is_superuser = False
@@ -217,6 +219,7 @@ class AnonymousUser:
     data_nascimento = None
     foto_perfil = None
     verificado = False
+    notificar_site = False
     is_active = False
     is_staff = False
     is_superuser = False

@@ -6,7 +6,7 @@
         (function () {
             try {
                 var salvo = localStorage.getItem('oportunet-tema');
-                var escuro = salvo
+                var escuro = (salvo === 'dark' || salvo === 'light')
                     ? salvo === 'dark'
                     : window.matchMedia('(prefers-color-scheme: dark)').matches;
                 document.documentElement.setAttribute('data-bs-theme', escuro ? 'dark' : 'light');
@@ -824,6 +824,11 @@
         /* ---------- Modo escuro ---------- */
         (function () {
             var CHAVE_TEMA = 'oportunet-tema';
+            var consultaSistema = window.matchMedia('(prefers-color-scheme: dark)');
+
+            function temaSalvo() {
+                try { return localStorage.getItem(CHAVE_TEMA); } catch (erro) { return null; }
+            }
 
             function atualizarBotoesTema() {
                 var escuro = document.documentElement.getAttribute('data-bs-theme') === 'dark';
@@ -839,17 +844,61 @@
                 if (meta) meta.setAttribute('content', escuro ? '#0e1116' : '#157a4a');
             }
 
+            function atualizarOpcoesTema() {
+                var salvo = temaSalvo();
+                var atual = (salvo === 'dark' || salvo === 'light') ? salvo : 'sistema';
+
+                document.querySelectorAll('.js-tema-opcao').forEach(function (botao) {
+                    var ativo = botao.getAttribute('data-tema') === atual;
+                    botao.classList.toggle('btn-accent', ativo);
+                    botao.classList.toggle('btn-ghost', !ativo);
+                    botao.setAttribute('aria-pressed', ativo ? 'true' : 'false');
+                });
+            }
+
+            function aplicarTema(valor) {
+                var escuro = valor === 'dark' || (valor !== 'light' && consultaSistema.matches);
+                document.documentElement.setAttribute('data-bs-theme', escuro ? 'dark' : 'light');
+
+                try {
+                    if (valor === 'sistema') localStorage.removeItem(CHAVE_TEMA);
+                    else localStorage.setItem(CHAVE_TEMA, valor);
+                } catch (erro) {}
+
+                atualizarBotoesTema();
+                atualizarOpcoesTema();
+            }
+
             document.querySelectorAll('.js-tema').forEach(function (botao) {
                 botao.addEventListener('click', function () {
                     var escuro = document.documentElement.getAttribute('data-bs-theme') === 'dark';
-                    var novo = escuro ? 'light' : 'dark';
-                    document.documentElement.setAttribute('data-bs-theme', novo);
-                    try { localStorage.setItem(CHAVE_TEMA, novo); } catch (erro) {}
-                    atualizarBotoesTema();
+                    aplicarTema(escuro ? 'light' : 'dark');
                 });
             });
 
+            document.querySelectorAll('.js-tema-opcao').forEach(function (botao) {
+                botao.addEventListener('click', function () {
+                    aplicarTema(botao.getAttribute('data-tema'));
+                });
+            });
+
+            // Segue o sistema enquanto a preferência for "Sistema".
+            var aoMudarSistema = function () {
+                var salvo = temaSalvo();
+                if (salvo !== 'dark' && salvo !== 'light') {
+                    document.documentElement.setAttribute('data-bs-theme', consultaSistema.matches ? 'dark' : 'light');
+                    atualizarBotoesTema();
+                }
+            };
+
+            if (consultaSistema.addEventListener) {
+                consultaSistema.addEventListener('change', aoMudarSistema);
+            } else if (consultaSistema.addListener) {
+                consultaSistema.addListener(aoMudarSistema);
+            }
+
             atualizarBotoesTema();
+            atualizarOpcoesTema();
 
             /* ---------- Avisos em popup ---------- */
             var pilha = document.getElementById('toastPilha');

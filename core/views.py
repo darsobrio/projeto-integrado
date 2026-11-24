@@ -20,6 +20,7 @@ from core.firebase_auth import (
     autenticar_firebase,
     cadastrar_firebase,
     gerar_link_redefinicao,
+    token_tem_google_verificado,
     verificar_token_firebase,
 )
 from core.moderation import (
@@ -356,15 +357,13 @@ def login_google(request):
         return redirect('core:login')
 
     dados_token = verificar_token_firebase(id_token)
-    firebase_claims = (dados_token or {}).get('firebase') or {}
     email = str((dados_token or {}).get('email') or '').strip().lower()
     uid = str((dados_token or {}).get('uid') or '').strip()
 
     if (
         not uid
         or not email
-        or dados_token.get('email_verified') is not True
-        or firebase_claims.get('sign_in_provider') != 'google.com'
+        or not token_tem_google_verificado(dados_token)
     ):
         messages.error(
             request,

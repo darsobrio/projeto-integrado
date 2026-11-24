@@ -54,6 +54,10 @@
             <div id="googleVincular" class="card-flat p-3 mt-3" hidden>
                 <h2 class="h6 mb-1">Vincule sua conta existente</h2>
                 <p id="googleEmailVincular" class="text-muted small mb-2"></p>
+                <p class="text-muted small mb-2">
+                    Confirme sua senha atual uma vez. Depois do vínculo, os próximos
+                    acessos entram direto com o Google.
+                </p>
                 <label for="googleSenhaVincular" class="form-label small">Senha atual do Oportunet</label>
                 <input id="googleSenhaVincular" type="password" class="form-control mb-2" autocomplete="current-password">
                 <button id="googleVincularButton" type="button" class="btn btn-accent w-100">Confirmar e vincular Google</button>
@@ -109,8 +113,8 @@ function toggleSenha() {
         errorBox.hidden = true;
     }
 
-    function enviarToken(usuario) {
-        return usuario.getIdToken().then(function (token) {
+    function enviarToken(usuario, atualizarToken) {
+        return usuario.getIdToken(Boolean(atualizarToken)).then(function (token) {
             tokenForm.elements.id_token.value = token;
             tokenForm.elements.tipo_usuario.value =
                 document.getElementById('googleTipoUsuario').value;
@@ -173,7 +177,7 @@ function toggleSenha() {
                 return resultado.user.linkWithCredential(googleCredentialPendente);
             })
             .then(function (resultado) {
-                return enviarToken(resultado.user);
+                return enviarToken(resultado.user, true);
             })
             .catch(function (erro) {
                 const mensagem = erro.code === 'auth/wrong-password' ||

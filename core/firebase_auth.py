@@ -54,6 +54,22 @@ def verificar_token_firebase(id_token):
         return None
 
 
+def token_tem_google_verificado(dados_token):
+    """Aceita login Google direto ou uma conta Google já vinculada."""
+    if (
+        not isinstance(dados_token, dict)
+        or dados_token.get("email_verified") is not True
+    ):
+        return False
+
+    firebase_claims = dados_token.get("firebase") or {}
+    if firebase_claims.get("sign_in_provider") == "google.com":
+        return True
+
+    identities = firebase_claims.get("identities") or {}
+    return bool(identities.get("google.com"))
+
+
 def gerar_link_redefinicao(email):
     """Gera o link de redefinição de senha do Firebase para o e-mail informado.
 

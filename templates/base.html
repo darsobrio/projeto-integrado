@@ -131,18 +131,6 @@
             vertical-align: middle;
         }
         .navbar-toggler:focus { box-shadow: none; }
-        .btn-tema {
-            width: 38px; height: 38px; flex: 0 0 38px;
-            display: inline-flex; align-items: center; justify-content: center;
-            border-radius: 9px;
-            border: 1px solid var(--border-strong);
-            background: var(--surface);
-            color: var(--text);
-            font-size: 1rem;
-            box-shadow: var(--shadow-sm);
-            transition: background-color .15s, color .15s, border-color .15s, transform .12s;
-        }
-        .btn-tema:hover { background: var(--surface-hover); color: var(--ink); transform: translateY(-1px); }
         .site-nav .dropdown-menu { padding: .4rem; }
 
         /* ---------- Botões ---------- */
@@ -666,11 +654,6 @@
                         {% if nao_lidas %}<span class="position-absolute badge rounded-pill bg-danger" style="top:-2px;right:0;font-size:.6rem;">{{ nao_lidas }}</span>{% endif %}
                     </a>
                 {% endif %}
-                {% if request.path != '/' %}
-                <button type="button" class="btn-tema js-tema" aria-label="Alternar modo escuro" title="Modo escuro">
-                    <i class="bi bi-moon-stars"></i>
-                </button>
-                {% endif %}
                 <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMain" aria-label="Menu">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -685,13 +668,6 @@
                     {% endif %}
                 </ul>
                 <ul class="navbar-nav align-items-lg-center gap-2">
-                    {% if request.path != '/' %}
-                    <li class="nav-item d-none d-lg-block">
-                        <button type="button" class="btn-tema js-tema" aria-label="Alternar modo escuro" title="Modo escuro">
-                            <i class="bi bi-moon-stars"></i>
-                        </button>
-                    </li>
-                    {% endif %}
                     {% if user.is_authenticated %}
                         {% if user.tipo_usuario == 'empresa' %}
                             <li class="nav-item"><a class="btn btn-soft btn-sm px-3" href="{% url 'jobs:create' %}"><i class="bi bi-plus-lg me-1"></i>Publicar vaga</a></li>
@@ -848,15 +824,8 @@
                 try { return localStorage.getItem(CHAVE_TEMA); } catch (erro) { return null; }
             }
 
-            function atualizarBotoesTema() {
+            function atualizarMetaTema() {
                 var escuro = document.documentElement.getAttribute('data-bs-theme') === 'dark';
-
-                document.querySelectorAll('.js-tema').forEach(function (botao) {
-                    var icone = botao.querySelector('i');
-                    if (icone) icone.className = escuro ? 'bi bi-sun' : 'bi bi-moon-stars';
-                    botao.setAttribute('title', escuro ? 'Modo claro' : 'Modo escuro');
-                    botao.setAttribute('aria-label', escuro ? 'Ativar modo claro' : 'Ativar modo escuro');
-                });
 
                 var meta = document.querySelector('meta[name="theme-color"]');
                 if (meta) meta.setAttribute('content', escuro ? '#0e1116' : '#157a4a');
@@ -883,16 +852,9 @@
                     else localStorage.setItem(CHAVE_TEMA, valor);
                 } catch (erro) {}
 
-                atualizarBotoesTema();
+                atualizarMetaTema();
                 atualizarOpcoesTema();
             }
-
-            document.querySelectorAll('.js-tema').forEach(function (botao) {
-                botao.addEventListener('click', function () {
-                    var escuro = document.documentElement.getAttribute('data-bs-theme') === 'dark';
-                    aplicarTema(escuro ? 'light' : 'dark');
-                });
-            });
 
             document.querySelectorAll('.js-tema-opcao').forEach(function (botao) {
                 botao.addEventListener('click', function () {
@@ -905,7 +867,7 @@
                 var salvo = temaSalvo();
                 if (salvo !== 'dark' && salvo !== 'light') {
                     document.documentElement.setAttribute('data-bs-theme', consultaSistema.matches ? 'dark' : 'light');
-                    atualizarBotoesTema();
+                    atualizarMetaTema();
                 }
             };
 
@@ -915,7 +877,7 @@
                 consultaSistema.addListener(aoMudarSistema);
             }
 
-            atualizarBotoesTema();
+            atualizarMetaTema();
             atualizarOpcoesTema();
 
             /* ---------- Avisos em popup ---------- */

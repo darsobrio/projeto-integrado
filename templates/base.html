@@ -1,4 +1,5 @@
 {% load static %}
+{% get_static_prefix as STATIC_PREFIX %}
 <!DOCTYPE html>
 <html lang="pt-BR" data-bs-theme="light">
 <head>
@@ -25,7 +26,7 @@
     <meta property="og:description" content="{% block og_description %}Vagas de emprego, estágios e imóveis para alugar em Paulistana - PI. Publicar e buscar é gratuito.{% endblock %}">
     <meta property="og:url" content="{{ request.build_absolute_uri }}">
     <meta name="twitter:card" content="summary">
-    <link rel="icon" type="image/svg+xml" href="{% static 'images/oportunet-logo.svg' %}">
+    <link rel="icon" type="image/svg+xml" href="{{ STATIC_PREFIX }}images/oportunet-logo.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
@@ -650,7 +651,7 @@
     <nav class="navbar navbar-expand-lg site-nav py-0">
         <div class="container py-2">
             <a class="navbar-brand brand d-inline-flex align-items-center gap-2" href="{% url 'core:home' %}">
-                <img src="{% static 'images/oportunet-logo.svg' %}" alt="" class="brand-logo">
+                <img src="{{ STATIC_PREFIX }}images/oportunet-logo.svg" alt="" class="brand-logo">
                 <span>Oportunet<span class="brand-dot">.</span></span>
             </a>
             <div class="d-flex align-items-center gap-1 ms-auto d-lg-none">
@@ -748,7 +749,7 @@
             <div class="row g-4 pb-4">
                 <div class="col-lg-5">
                     <span class="brand d-inline-flex align-items-center gap-2">
-                        <img src="{% static 'images/oportunet-logo.svg' %}" alt="" class="brand-logo footer-logo">
+                        <img src="{{ STATIC_PREFIX }}images/oportunet-logo.svg" alt="" class="brand-logo footer-logo">
                         <span>Oportunet<span class="brand-dot">.</span></span>
                     </span>
                     <p class="mt-2 mb-0" style="max-width: 26rem;">

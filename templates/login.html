@@ -33,6 +33,39 @@
                 <button class="btn btn-accent w-100 py-2" type="submit"><i class="bi bi-box-arrow-in-right me-2"></i>Entrar</button>
             </form>
 
+            <div class="d-flex align-items-center gap-3 my-4" aria-hidden="true">
+                <span class="flex-grow-1 border-top"></span>
+                <span class="text-muted small">ou continue com</span>
+                <span class="flex-grow-1 border-top"></span>
+            </div>
+
+            <label for="googleTipoUsuario" class="form-label small">Tipo de perfil se for seu primeiro acesso</label>
+            <select id="googleTipoUsuario" class="form-select mb-3">
+                <option value="candidato">Candidato</option>
+                <option value="empresa">Empresa</option>
+                <option value="proprietario">Proprietário</option>
+            </select>
+            <button id="googleLoginButton" type="button" class="btn btn-ghost w-100 py-2">
+                <span class="fw-bold me-2" aria-hidden="true" style="color:#4285f4;">G</span>
+                Entrar com Google
+            </button>
+            <div id="googleErro" class="small text-danger mt-2" role="alert" hidden></div>
+
+            <div id="googleVincular" class="card-flat p-3 mt-3" hidden>
+                <h2 class="h6 mb-1">Vincule sua conta existente</h2>
+                <p id="googleEmailVincular" class="text-muted small mb-2"></p>
+                <label for="googleSenhaVincular" class="form-label small">Senha atual do Oportunet</label>
+                <input id="googleSenhaVincular" type="password" class="form-control mb-2" autocomplete="current-password">
+                <button id="googleVincularButton" type="button" class="btn btn-accent w-100">Confirmar e vincular Google</button>
+            </div>
+
+            <form id="googleTokenForm" method="POST" action="{% url 'core:login_google' %}" hidden>
+                {% csrf_token %}
+                <input type="hidden" name="id_token">
+                <input type="hidden" name="tipo_usuario">
+                <input type="hidden" name="next" value="{{ next }}">
+            </form>
+
             <div class="divider text-center mt-4 pt-3">
                 <small class="text-muted">Não tem conta? <a href="{% url 'core:register' %}" class="text-accent fw-medium">Criar conta</a></small>
             </div>
@@ -49,4 +82,111 @@ function toggleSenha() {
     else { input.type = 'password'; icone.className = 'bi bi-eye'; }
 }
 </script>
+
+{% block extra_js %}
+{{ firebase_web_config|json_script:"firebaseWebConfig" }}
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script>
+(function () {
+    const configEl = document.getElementById('firebaseWebConfig');
+    const loginButton = document.getElementById('googleLoginButton');
+    const errorBox = document.getElementById('googleErro');
+    const linkBox = document.getElementById('googleVincular');
+    const linkButton = document.getElementById('googleVincularButton');
+    const passwordInput = document.getElementById('googleSenhaVincular');
+    const tokenForm = document.getElementById('googleTokenForm');
+    let googleCredentialPendente = null;
+    let emailPendente = '';
+
+    function mostrarErro(mensagem) {
+        errorBox.textContent = mensagem;
+        errorBox.hidden = false;
+    }
+
+    function limparErro() {
+        errorBox.textContent = '';
+        errorBox.hidden = true;
+    }
+
+    function enviarToken(usuario) {
+        return usuario.getIdToken().then(function (token) {
+            tokenForm.elements.id_token.value = token;
+            tokenForm.elements.tipo_usuario.value =
+                document.getElementById('googleTipoUsuario').value;
+            tokenForm.submit();
+        });
+    }
+
+    const firebaseConfig = configEl ? JSON.parse(configEl.textContent) : {};
+    if (!firebaseConfig.apiKey || !firebaseConfig.authDomain || !firebaseConfig.projectId) {
+        loginButton.disabled = true;
+        mostrarErro('O acesso com Google ainda não está configurado neste ambiente.');
+        return;
+    }
+
+    if (typeof firebase === 'undefined') {
+        loginButton.disabled = true;
+        mostrarErro('Não foi possível carregar o serviço de autenticação do Google.');
+        return;
+    }
+
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+
+    loginButton.addEventListener('click', function () {
+        limparErro();
+        loginButton.disabled = true;
+        auth.signInWithPopup(provider)
+            .then(function (resultado) {
+                return enviarToken(resultado.user);
+            })
+            .catch(function (erro) {
+                if (erro.code === 'auth/account-exists-with-different-credential') {
+                    googleCredentialPendente =
+                        firebase.auth.GoogleAuthProvider.credentialFromError(erro);
+                    emailPendente = erro.email || (erro.customData && erro.customData.email) || '';
+                    if (googleCredentialPendente && emailPendente) {
+                        document.getElementById('googleEmailVincular').textContent =
+                            'Este e-mail já possui uma conta: ' + emailPendente;
+                        linkBox.hidden = false;
+                        passwordInput.focus();
+                    } else {
+                        mostrarErro('Entre com e-mail e senha e tente vincular o Google novamente.');
+                    }
+                } else if (erro.code !== 'auth/popup-closed-by-user') {
+                    mostrarErro('Não foi possível entrar com Google. Confira a configuração do Firebase e tente novamente.');
+                }
+            })
+            .finally(function () {
+                loginButton.disabled = false;
+            });
+    });
+
+    linkButton.addEventListener('click', function () {
+        limparErro();
+        linkButton.disabled = true;
+        auth.signInWithEmailAndPassword(emailPendente, passwordInput.value)
+            .then(function (resultado) {
+                return resultado.user.linkWithCredential(googleCredentialPendente);
+            })
+            .then(function (resultado) {
+                return enviarToken(resultado.user);
+            })
+            .catch(function (erro) {
+                const mensagem = erro.code === 'auth/wrong-password' ||
+                    erro.code === 'auth/invalid-credential'
+                    ? 'Senha incorreta. Confira sua senha atual do Oportunet.'
+                    : 'Não foi possível vincular as contas. Tente novamente.';
+                mostrarErro(mensagem);
+            })
+            .finally(function () {
+                linkButton.disabled = false;
+            });
+    });
+})();
+</script>
+{% endblock %}
 {% endblock %}

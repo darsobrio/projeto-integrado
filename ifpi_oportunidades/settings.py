@@ -14,6 +14,11 @@ DEBUG = os.getenv('DEBUG', 'True') == 'True'
 FIREBASE_API_KEY = os.getenv("FIREBASE_API_KEY", "")
 
 FIREBASE_PROJECT_ID = os.getenv("FIREBASE_PROJECT_ID", "")
+FIREBASE_AUTH_DOMAIN = os.getenv(
+    "FIREBASE_AUTH_DOMAIN",
+    f"{FIREBASE_PROJECT_ID}.firebaseapp.com" if FIREBASE_PROJECT_ID else "",
+)
+FIREBASE_WEB_APP_ID = os.getenv("FIREBASE_WEB_APP_ID", "")
 
 
 def _lista_de_env(nome):

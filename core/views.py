@@ -2,12 +2,14 @@ import os
 from datetime import datetime
 from types import SimpleNamespace
 
+from django.conf import settings
 from django.contrib import messages
 from django.core.files.storage import default_storage
 from django.http import JsonResponse, QueryDict
 from django.shortcuts import redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.decorators.http import require_POST
 from firebase_admin import auth as firebase_auth
 from firebase_admin.exceptions import InvalidArgumentError
 
@@ -37,7 +39,12 @@ from core.notificacoes import (
     marcar_todas_lidas,
     notificacoes_do_usuario,
 )
-from core.user import criar_usuario, existe_cpf, existe_email, obter_usuario
+from core.user import (
+    criar_usuario,
+    existe_cpf,
+    existe_email,
+    obter_usuario,
+)
 from core.utils import validar_cpf_cnpj
 from jobs.views import converter_vaga
 from properties.views import converter_imovel
@@ -320,7 +327,92 @@ def login_view(request):
     return render(request, 'login.html', {
         'logged_out': logout_param,
         'next': request.POST.get('next') or request.GET.get('next', ''),
+        'firebase_web_config': {
+            'apiKey': settings.FIREBASE_API_KEY,
+            'authDomain': settings.FIREBASE_AUTH_DOMAIN,
+            'projectId': settings.FIREBASE_PROJECT_ID,
+            **(
+                {'appId': settings.FIREBASE_WEB_APP_ID}
+                if settings.FIREBASE_WEB_APP_ID
+                else {}
+            ),
+        },
     })
+
+
+@require_POST
+def login_google(request):
+    """Valida no servidor o ID token obtido pelo Firebase Auth via Google."""
+    id_token = request.POST.get('id_token', '').strip()
+    tipo_usuario = request.POST.get('tipo_usuario', 'candidato').strip()
+    tipo_usuario = (
+        tipo_usuario
+        if tipo_usuario in {'candidato', 'empresa', 'proprietario'}
+        else 'candidato'
+    )
+
+    if not id_token:
+        messages.error(request, 'Não recebemos a confirmação do Google. Tente novamente.')
+        return redirect('core:login')
+
+    dados_token = verificar_token_firebase(id_token)
+    firebase_claims = (dados_token or {}).get('firebase') or {}
+    email = str((dados_token or {}).get('email') or '').strip().lower()
+    uid = str((dados_token or {}).get('uid') or '').strip()
+
+    if (
+        not uid
+        or not email
+        or dados_token.get('email_verified') is not True
+        or firebase_claims.get('sign_in_provider') != 'google.com'
+    ):
+        messages.error(
+            request,
+            'Não foi possível validar sua conta Google. Tente novamente.',
+        )
+        return redirect('core:login')
+
+    try:
+        usuario = obter_usuario(uid)
+
+        if usuario is None:
+            if existe_email(email):
+                messages.error(
+                    request,
+                    'Este e-mail já possui uma conta. Entre com sua senha e '
+                    'vincule o Google para usar esse acesso.',
+                )
+                return redirect('core:login')
+
+            usuario = criar_usuario(
+                firebase_uid=uid,
+                email=email,
+                nome_completo=str(dados_token.get('name') or email.split('@')[0]),
+                tipo_usuario=tipo_usuario,
+                username=email,
+            )
+        elif (usuario.email or '').strip().lower() != email:
+            messages.error(request, 'O e-mail da conta Google não confere com o cadastro.')
+            return redirect('core:login')
+
+        login(request, usuario)
+    except Exception:
+        messages.error(
+            request,
+            'Não foi possível concluir o acesso agora. Tente novamente.',
+        )
+        return redirect('core:login')
+
+    messages.success(request, f'Olá, {usuario.get_short_name()}! Login realizado com o Google.')
+    proximo = request.POST.get('next') or ''
+    if not url_has_allowed_host_and_scheme(
+        proximo,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        proximo = reverse('core:dashboard')
+
+    return redirect(proximo)
 
 
 def logout_view(request):

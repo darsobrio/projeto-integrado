@@ -8,6 +8,7 @@ urlpatterns = [
     path('buscar/', views.busca_rapida, name='busca_rapida'),
     path('cadastro/', views.register, name='register'),
     path('login/', views.login_view, name='login'),
+    path('login/google/', views.login_google, name='login_google'),
     path('recuperar-senha/', views.password_reset, name='password_reset'),
     path('logout/', views.logout_view, name='logout'),
     path('dashboard/', views.dashboard, name='dashboard'),

@@ -109,15 +109,22 @@ ROTULOS_CAMPOS = {
 
 
 def campos_pendentes(usuario, perfil_candidato):
-    """Rótulos dos campos que ainda estão vazios no perfil."""
-    campos = [(usuario, campo) for campo in CAMPOS_CONTA]
+    """Campos que ainda estão vazios, com o rótulo e a aba onde são preenchidos."""
+    campos = [(usuario, campo, "conta") for campo in CAMPOS_CONTA]
 
     if usuario.tipo_usuario == "candidato" and perfil_candidato is not None:
-        campos += [(perfil_candidato, campo) for campo in CAMPOS_PROFISSIONAIS]
+        campos += [
+            (perfil_candidato, campo, "profissional")
+            for campo in CAMPOS_PROFISSIONAIS
+        ]
 
     return [
-        ROTULOS_CAMPOS.get(campo, campo)
-        for objeto, campo in campos
+        {
+            "campo": campo,
+            "rotulo": ROTULOS_CAMPOS.get(campo, campo),
+            "secao": secao,
+        }
+        for objeto, campo, secao in campos
         if not getattr(objeto, campo, None)
     ]
 

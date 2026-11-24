@@ -1,6 +1,18 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-bs-theme="light">
 <head>
+    <script>
+        // Aplica o tema salvo antes de a página pintar (evita o "flash" claro).
+        (function () {
+            try {
+                var salvo = localStorage.getItem('oportunet-tema');
+                var escuro = salvo
+                    ? salvo === 'dark'
+                    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+                document.documentElement.setAttribute('data-bs-theme', escuro ? 'dark' : 'light');
+            } catch (erro) { /* sem localStorage: continua no tema claro */ }
+        })();
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Oportunet{% endblock %}</title>
@@ -23,6 +35,7 @@
             --bg: #f5f5f3;
             --surface: #ffffff;
             --surface-2: #eff0ee;
+            --surface-hover: #fbfbfa;
             --border: #e4e5e1;
             --border-strong: #d4d5d0;
             --text: #1d2128;
@@ -31,17 +44,44 @@
             --accent: #157a4a;
             --accent-dark: #0f5a37;
             --accent-light: #1c9a5e;
+            --accent-hover: #0f5a37;
             --accent-soft: #f0f7f3;
+            --accent-soft-hover: #e4f1ea;
             --accent-border: #cde5da;
+            --overlay: rgba(255,255,255,.9);
             --radius: 14px;
             --radius-sm: 10px;
             --shadow-sm: 0 1px 2px rgba(18,20,24,.05);
             --shadow-md: 0 6px 18px -12px rgba(18,20,24,.22), 0 2px 4px rgba(18,20,24,.04);
             --shadow-lg: 0 22px 48px -26px rgba(18,20,24,.30);
         }
+        /* Modo escuro: o atributo data-bs-theme também escurece os componentes
+           do Bootstrap (menus, campos, botões) automaticamente. */
+        [data-bs-theme="dark"] {
+            --bg: #0e1116;
+            --surface: #151a21;
+            --surface-2: #1c232c;
+            --surface-hover: #1e252e;
+            --border: #252d38;
+            --border-strong: #333e4b;
+            --text: #e5e9ef;
+            --muted: #93a0af;
+            --ink: #f3f6f9;
+            --accent: #1f9d63;
+            --accent-dark: #6ee7a8;
+            --accent-light: #34c98a;
+            --accent-hover: #26b573;
+            --accent-soft: #10241b;
+            --accent-soft-hover: #163324;
+            --accent-border: #1d4a35;
+            --overlay: rgba(19,24,30,.86);
+            --shadow-sm: 0 1px 2px rgba(0,0,0,.45);
+            --shadow-md: 0 6px 18px -12px rgba(0,0,0,.75), 0 2px 4px rgba(0,0,0,.4);
+            --shadow-lg: 0 22px 48px -26px rgba(0,0,0,.85);
+        }
         * { -webkit-font-smoothing: antialiased; }
         html { scroll-behavior: smooth; }
-        ::selection { background: #cde5da; color: var(--accent-dark); }
+        ::selection { background: var(--accent-border); color: var(--accent-dark); }
         body {
             background-color: var(--bg);
             color: var(--text);
@@ -62,7 +102,7 @@
 
         /* ---------- Navegação ---------- */
         .site-nav {
-            background: rgba(255,255,255,.9);
+            background: var(--overlay);
             backdrop-filter: saturate(150%) blur(10px);
             -webkit-backdrop-filter: saturate(150%) blur(10px);
             border-bottom: 1px solid var(--border);
@@ -83,6 +123,18 @@
         .nav-min:hover { color: var(--ink); background: var(--surface-2); }
         .nav-min.active { color: var(--ink); background: var(--surface-2); }
         .navbar-toggler:focus { box-shadow: none; }
+        .btn-tema {
+            width: 38px; height: 38px; flex: 0 0 38px;
+            display: inline-flex; align-items: center; justify-content: center;
+            border-radius: 9px;
+            border: 1px solid var(--border-strong);
+            background: var(--surface);
+            color: var(--text);
+            font-size: 1rem;
+            box-shadow: var(--shadow-sm);
+            transition: background-color .15s, color .15s, border-color .15s, transform .12s;
+        }
+        .btn-tema:hover { background: var(--surface-hover); color: var(--ink); transform: translateY(-1px); }
         .site-nav .dropdown-menu { padding: .4rem; }
 
         /* ---------- Botões ---------- */
@@ -99,8 +151,8 @@
             box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 1px 2px rgba(15,90,55,.25);
         }
         .btn-accent:hover {
-            background: var(--accent-dark);
-            border-color: var(--accent-dark);
+            background: var(--accent-hover);
+            border-color: var(--accent-hover);
             color: #fff;
             transform: translateY(-1px);
             box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 10px 22px -12px rgba(15,90,55,.7);
@@ -112,9 +164,9 @@
             color: var(--text);
             box-shadow: var(--shadow-sm);
         }
-        .btn-ghost:hover { background: #fbfbfa; border-color: #c3c4bf; color: var(--ink); transform: translateY(-1px); }
+        .btn-ghost:hover { background: var(--surface-hover); border-color: var(--border-strong); color: var(--ink); transform: translateY(-1px); }
         .btn-soft { background: var(--accent-soft); border: 1px solid var(--accent-border); color: var(--accent-dark); }
-        .btn-soft:hover { background: #e4f1ea; border-color: var(--accent); color: var(--accent-dark); }
+        .btn-soft:hover { background: var(--accent-soft-hover); border-color: var(--accent); color: var(--accent-dark); }
         .btn-check:checked + .btn-ghost {
             background: var(--accent-soft);
             border-color: var(--accent);
@@ -157,6 +209,16 @@
         }
         .avatar-lg { width: 58px; height: 58px; flex-basis: 58px; font-size: 1.25rem; border-radius: 14px; }
         .avatar-soft { background: var(--accent-soft); color: var(--accent-dark); box-shadow: none; border: 1px solid var(--accent-border); }
+
+        /* ---------- Foto de perfil (redonda) ---------- */
+        .foto-perfil {
+            width: 72px; height: 72px; flex: 0 0 72px;
+            border-radius: 50%; object-fit: cover;
+            border: 1px solid var(--border);
+            background: var(--surface-2);
+        }
+        .foto-perfil-sm { width: 44px; height: 44px; flex: 0 0 44px; }
+        .foto-perfil-lg { width: 110px; height: 110px; flex: 0 0 110px; }
 
         /* ---------- Linha de lista (com destaque na borda) ---------- */
         .list-row {
@@ -214,7 +276,7 @@
         }
         .card-cover-price {
             position: absolute; left: 14px; bottom: 12px; z-index: 1;
-            background: rgba(255,255,255,.96);
+            background: var(--surface);
             color: var(--ink);
             font-size: .82rem; font-weight: 600;
             padding: .32rem .7rem; border-radius: 999px;
@@ -226,7 +288,7 @@
             display: inline-flex; align-items: center; gap: .35rem;
             font-size: .75rem; font-weight: 500;
             padding: .28rem .65rem; border-radius: 999px;
-            background: var(--surface-2); color: #565b62; border: 1px solid var(--border);
+            background: var(--surface-2); color: var(--muted); border: 1px solid var(--border);
             white-space: nowrap;
         }
         .chip-accent { background: var(--accent-soft); color: var(--accent-dark); border-color: var(--accent-border); }
@@ -344,8 +406,8 @@
         }
         .cta-band > * { position: relative; z-index: 1; }
         .cta-band .lead-min { color: rgba(255,255,255,.78); }
-        .btn-on-dark { background: #fff; border: 1px solid transparent; color: var(--accent-dark); }
-        .btn-on-dark:hover { background: #f2f2ef; color: var(--accent-dark); transform: translateY(-1px); }
+        .btn-on-dark { background: #fff; border: 1px solid transparent; color: #0f3b27; }
+        .btn-on-dark:hover { background: #f2f2ef; color: #0f3b27; transform: translateY(-1px); }
         .btn-outline-dark-soft { background: transparent; border: 1px solid rgba(255,255,255,.4); color: #fff; }
         .btn-outline-dark-soft:hover { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.72); color: #fff; }
 
@@ -387,13 +449,52 @@
             border-radius: 16px;
         }
 
-        /* ---------- Alertas ---------- */
-        .alert { border: 1px solid var(--border); border-radius: 11px; font-size: .9rem; box-shadow: var(--shadow-sm); }
-        .alert-success { background: var(--accent-soft); color: var(--accent-dark); border-color: var(--accent-border); }
-        .alert-danger,
-        .alert-error { background: #fdf1f1; color: #9a2b2b; border-color: #f6cfcf; }
-        .alert-info { background: #eef4ff; color: #1e40af; border-color: #dbe6fe; }
-        .alert-warning { background: #fef7e7; color: #8a5a12; border-color: #f6e2b8; }
+        /* ---------- Avisos em popup (toasts) ---------- */
+        .toast-pilha {
+            position: fixed; top: 4.75rem; right: 1rem; z-index: 1055;
+            display: flex; flex-direction: column; gap: .6rem;
+            width: min(22rem, calc(100vw - 2rem));
+            pointer-events: none;
+        }
+        .toast-min {
+            pointer-events: auto;
+            display: flex; align-items: flex-start; gap: .65rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--accent);
+            border-radius: var(--radius-sm);
+            padding: .7rem .8rem;
+            box-shadow: var(--shadow-lg);
+            font-size: .875rem;
+            color: var(--text);
+            animation: toast-entra .28s ease both;
+        }
+        .toast-min.saindo { animation: toast-sai .22s ease both; }
+        .toast-min-icone { color: var(--accent); font-size: 1rem; line-height: 1.35; }
+        .toast-min-texto { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+        .toast-min-fechar {
+            border: 0; background: transparent; color: var(--muted);
+            padding: 0; line-height: 1; cursor: pointer; font-size: .8rem;
+        }
+        .toast-min-fechar:hover { color: var(--ink); }
+        .toast-success { border-left-color: var(--accent); }
+        .toast-success .toast-min-icone { color: var(--accent); }
+        .toast-error, .toast-danger { border-left-color: #d14646; }
+        .toast-error .toast-min-icone, .toast-danger .toast-min-icone { color: #d14646; }
+        .toast-warning { border-left-color: #d99b2b; }
+        .toast-warning .toast-min-icone { color: #d99b2b; }
+        .toast-info, .toast-debug { border-left-color: #3b7ddd; }
+        .toast-info .toast-min-icone, .toast-debug .toast-min-icone { color: #3b7ddd; }
+
+        @keyframes toast-entra { from { opacity: 0; transform: translateX(18px); } to { opacity: 1; transform: none; } }
+        @keyframes toast-sai { to { opacity: 0; transform: translateX(18px); } }
+
+        /* ---------- Ajustes do modo escuro em cores fixas ---------- */
+        [data-bs-theme="dark"] .chip-info { background: #132a4d; color: #9dc1ff; border-color: #1d3f6d; }
+        [data-bs-theme="dark"] .chip-warn { background: #3a2c11; color: #f2c879; border-color: #5a4318; }
+        [data-bs-theme="dark"] .chip-danger { background: #3d1d1d; color: #f5a3a3; border-color: #632c2c; }
+        [data-bs-theme="dark"] .card-cover { background: #0d2b1e; }
+        [data-bs-theme="dark"] .cta-band { background: #0b2a1c; }
 
         /* ---------- Rodapé ---------- */
         .site-footer {
@@ -526,6 +627,8 @@
             .empty-state { padding: 2.2rem 1.1rem; }
             /* botões que ficam melhores ocupando a linha inteira no celular */
             .btn-mob-full { width: 100%; }
+            /* popups de aviso ocupam a largura da tela */
+            .toast-pilha { top: 4.4rem; left: .75rem; right: .75rem; width: auto; }
         }
 
         @media (min-width: 992px) { .w-lg-auto { width: auto !important; } }
@@ -555,6 +658,9 @@
                         {% if nao_lidas %}<span class="position-absolute badge rounded-pill bg-danger" style="top:-2px;right:0;font-size:.6rem;">{{ nao_lidas }}</span>{% endif %}
                     </a>
                 {% endif %}
+                <button type="button" class="btn-tema js-tema" aria-label="Alternar modo escuro" title="Modo escuro">
+                    <i class="bi bi-moon-stars"></i>
+                </button>
                 <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMain" aria-label="Menu">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -569,6 +675,11 @@
                     {% endif %}
                 </ul>
                 <ul class="navbar-nav align-items-lg-center gap-2">
+                    <li class="nav-item d-none d-lg-block">
+                        <button type="button" class="btn-tema js-tema" aria-label="Alternar modo escuro" title="Modo escuro">
+                            <i class="bi bi-moon-stars"></i>
+                        </button>
+                    </li>
                     {% if user.is_authenticated %}
                         {% if user.tipo_usuario == 'empresa' %}
                             <li class="nav-item"><a class="btn btn-soft btn-sm px-3" href="{% url 'jobs:create' %}"><i class="bi bi-plus-lg me-1"></i>Publicar vaga</a></li>
@@ -620,17 +731,15 @@
     </nav>
 
     <main id="conteudo" class="flex-shrink-0">
-        {% if messages %}
-            <div class="container pt-3">
-                {% for message in messages %}
-                    <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show d-flex align-items-center" role="alert">
-                        <i class="bi {% if message.level_tag == 'success' %}bi-check-circle{% elif message.level_tag == 'error' %}bi-exclamation-circle{% elif message.level_tag == 'warning' %}bi-exclamation-triangle{% else %}bi-info-circle{% endif %} me-2"></i>
-                        <div>{{ message }}</div>
-                        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
+        <div class="toast-pilha" id="toastPilha" aria-live="polite" aria-atomic="true">
+            {% for message in messages %}
+                <div class="toast-min toast-{{ message.level_tag|default:'info' }}" role="status">
+                    <i class="bi {% if message.level_tag == 'success' %}bi-check-circle{% elif message.level_tag == 'error' %}bi-exclamation-circle{% elif message.level_tag == 'warning' %}bi-exclamation-triangle{% else %}bi-info-circle{% endif %} toast-min-icone"></i>
+                    <div class="toast-min-texto">{{ message }}</div>
+                    <button type="button" class="toast-min-fechar" aria-label="Fechar aviso"><i class="bi bi-x-lg"></i></button>
+                </div>
+            {% endfor %}
+        </div>
         {% block content %}{% endblock %}
     </main>
 
@@ -638,7 +747,7 @@
         <div class="container">
             <div class="row g-4 pb-4">
                 <div class="col-lg-5">
-                    <span class="brand text-dark">Oportunet<span class="brand-dot">.</span></span>
+                    <span class="brand">Oportunet<span class="brand-dot">.</span></span>
                     <p class="mt-2 mb-0" style="max-width: 26rem;">
                         Vagas e imóveis para a comunidade de Paulistana - PI.
                         Publicar e buscar é gratuito.
@@ -709,6 +818,93 @@
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 });
             }
+        })();
+    </script>
+    <script>
+        /* ---------- Modo escuro ---------- */
+        (function () {
+            var CHAVE_TEMA = 'oportunet-tema';
+
+            function atualizarBotoesTema() {
+                var escuro = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+
+                document.querySelectorAll('.js-tema').forEach(function (botao) {
+                    var icone = botao.querySelector('i');
+                    if (icone) icone.className = escuro ? 'bi bi-sun' : 'bi bi-moon-stars';
+                    botao.setAttribute('title', escuro ? 'Modo claro' : 'Modo escuro');
+                    botao.setAttribute('aria-label', escuro ? 'Ativar modo claro' : 'Ativar modo escuro');
+                });
+
+                var meta = document.querySelector('meta[name="theme-color"]');
+                if (meta) meta.setAttribute('content', escuro ? '#0e1116' : '#157a4a');
+            }
+
+            document.querySelectorAll('.js-tema').forEach(function (botao) {
+                botao.addEventListener('click', function () {
+                    var escuro = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+                    var novo = escuro ? 'light' : 'dark';
+                    document.documentElement.setAttribute('data-bs-theme', novo);
+                    try { localStorage.setItem(CHAVE_TEMA, novo); } catch (erro) {}
+                    atualizarBotoesTema();
+                });
+            });
+
+            atualizarBotoesTema();
+
+            /* ---------- Avisos em popup ---------- */
+            var pilha = document.getElementById('toastPilha');
+
+            function fecharToast(elemento) {
+                if (!elemento || elemento.classList.contains('saindo')) return;
+                elemento.classList.add('saindo');
+                setTimeout(function () {
+                    if (elemento.parentNode) elemento.parentNode.removeChild(elemento);
+                }, 220);
+            }
+
+            function agendarToast(elemento, tempo) {
+                setTimeout(function () { fecharToast(elemento); }, tempo || 6000);
+            }
+
+            function criarToast(mensagem, tipo, tempo) {
+                if (!pilha) return null;
+
+                var nivel = tipo || 'info';
+                var icones = {
+                    success: 'bi-check-circle',
+                    error: 'bi-exclamation-circle',
+                    danger: 'bi-exclamation-circle',
+                    warning: 'bi-exclamation-triangle',
+                    info: 'bi-info-circle'
+                };
+
+                var elemento = document.createElement('div');
+                elemento.className = 'toast-min toast-' + nivel;
+                elemento.setAttribute('role', 'status');
+                elemento.innerHTML = '<i class="bi ' + (icones[nivel] || icones.info) + ' toast-min-icone"></i>' +
+                    '<div class="toast-min-texto"></div>' +
+                    '<button type="button" class="toast-min-fechar" aria-label="Fechar aviso"><i class="bi bi-x-lg"></i></button>';
+                elemento.querySelector('.toast-min-texto').textContent = mensagem;
+                elemento.querySelector('.toast-min-fechar').addEventListener('click', function () {
+                    fecharToast(elemento);
+                });
+
+                pilha.appendChild(elemento);
+                agendarToast(elemento, tempo);
+                return elemento;
+            }
+
+            // Popups que vieram do servidor (django.contrib.messages).
+            if (pilha) {
+                pilha.querySelectorAll('.toast-min').forEach(function (elemento) {
+                    var botao = elemento.querySelector('.toast-min-fechar');
+                    if (botao) botao.addEventListener('click', function () { fecharToast(elemento); });
+                    agendarToast(elemento);
+                });
+            }
+
+            window.Oportunet = window.Oportunet || {};
+            window.Oportunet.toast = criarToast;
         })();
     </script>
     {% block extra_js %}{% endblock %}

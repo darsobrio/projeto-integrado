@@ -46,11 +46,6 @@
         transition: border-color .2s ease;
     }
     .kanban-card:hover { border-color: var(--accent-border); }
-    .kanban-card .avatar {
-        width: 32px; height: 32px; border-radius: 50%;
-        object-fit: cover; flex-shrink: 0;
-        border: 1px solid var(--border);
-    }
     .kanban-vazio {
         border: 1px dashed var(--border-strong);
         border-radius: 12px;
@@ -122,15 +117,19 @@
                     <div class="kanban-card">
                         <div class="d-flex align-items-center gap-2 mb-2">
                             {% if candidatura.candidato.foto_url %}
-                                <img src="{{ candidatura.candidato.foto_url }}" alt="Foto de {{ candidatura.candidato.nome }}" class="avatar">
+                                <img src="{{ candidatura.candidato.foto_url }}" alt="Foto de {{ candidatura.candidato.nome }}" class="foto-perfil foto-perfil-sm">
                             {% else %}
-                                <span class="icon-square avatar d-inline-flex align-items-center justify-content-center"><i class="bi bi-person"></i></span>
+                                <span class="icon-square d-inline-flex align-items-center justify-content-center"><i class="bi bi-person"></i></span>
                             {% endif %}
                             <div class="flex-grow-1 overflow-hidden">
                                 <div class="fw-semibold text-truncate" style="font-size:.85rem;">{{ candidatura.candidato.nome|default:"Candidato" }}</div>
                                 <div class="text-muted text-truncate" style="font-size:.74rem;">{{ candidatura.vaga.funcao|default:"Vaga" }}</div>
                             </div>
                         </div>
+
+                        {% if candidatura.candidato.cidade %}
+                        <div class="text-muted text-truncate mb-1" style="font-size:.72rem;"><i class="bi bi-geo-alt me-1"></i>{{ candidatura.candidato.cidade }}</div>
+                        {% endif %}
 
                         {% if candidatura.data_display %}
                         <div class="text-muted" style="font-size:.72rem;"><i class="bi bi-clock-history me-1"></i>{{ candidatura.data_display }}</div>

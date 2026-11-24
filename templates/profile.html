@@ -6,8 +6,7 @@
     <div class="container">
         <div class="d-flex flex-wrap align-items-center gap-3">
             {% if user.foto_perfil %}
-                <img src="{{ user.foto_perfil.url }}" alt="Foto de {{ user.nome_completo }}"
-                     style="width:72px;height:72px;border-radius:50%;object-fit:cover;border:1px solid var(--border);">
+                <img src="{{ user.foto_perfil.url }}" alt="Foto de {{ user.nome_completo }}" class="foto-perfil">
             {% else %}
                 <span class="icon-square icon-square-lg"><i class="bi bi-person"></i></span>
             {% endif %}
@@ -20,7 +19,13 @@
                     <span class="chip chip-muted chip-clip"><i class="bi bi-envelope"></i>{{ user.email }}</span>
                 </div>
             </div>
-            <a href="{% url 'core:dashboard' %}" class="btn btn-ghost btn-mob-full"><i class="bi bi-grid me-1"></i>Meu painel</a>
+            <div class="d-flex flex-wrap gap-2">
+                {% if user.firebase_uid %}
+                <a href="{% if user.tipo_usuario == 'empresa' %}{% url 'users:empresa_detalhe' user.firebase_uid %}{% else %}{% url 'users:candidato_detalhe' user.firebase_uid %}{% endif %}"
+                   class="btn btn-ghost btn-mob-full"><i class="bi bi-eye me-1"></i>Ver perfil público</a>
+                {% endif %}
+                <a href="{% url 'core:dashboard' %}" class="btn btn-ghost btn-mob-full"><i class="bi bi-grid me-1"></i>Meu painel</a>
+            </div>
         </div>
     </div>
 </section>
@@ -42,9 +47,13 @@
             </div>
             {% if pendentes %}
             <div class="mt-3">
-                <p class="text-muted small mb-2"><i class="bi bi-lightbulb me-1"></i>Para chegar a 100%, preencha:</p>
+                <p class="text-muted small mb-2"><i class="bi bi-lightbulb me-1"></i>Para chegar a 100%, preencha (clique para ir ao campo):</p>
                 <div class="d-flex flex-wrap gap-2">
-                    {% for campo in pendentes %}<span class="chip chip-muted">{{ campo }}</span>{% endfor %}
+                    {% for item in pendentes %}
+                    <button type="button" class="chip chip-filtro" data-bs-toggle="pill" data-bs-target="#aba-{{ item.secao }}" role="tab">
+                        <i class="bi bi-plus-circle"></i>{{ item.rotulo }}
+                    </button>
+                    {% endfor %}
                 </div>
             </div>
             {% else %}
@@ -141,7 +150,7 @@
                                 <img id="previaFotoPerfil"
                                      src="{% if user.foto_perfil %}{{ user.foto_perfil.url }}{% endif %}"
                                      alt="Foto de perfil"
-                                     style="width:110px;height:110px;border-radius:50%;object-fit:cover;border:1px solid var(--border);{% if not user.foto_perfil %}display:none;{% endif %}">
+                                     class="foto-perfil foto-perfil-lg"{% if not user.foto_perfil %} style="display:none;"{% endif %}>
                                 {% if not user.foto_perfil %}
                                     <span class="icon-square icon-square-lg" id="previaFotoPerfilVazia"><i class="bi bi-person"></i></span>
                                 {% endif %}
